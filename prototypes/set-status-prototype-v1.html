@@ -1,0 +1,754 @@
+<title>Set Status Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: Notch app shell. White nav rail, then the working surface. Builder = one sequence card; Case = case list + case page + simulator. */
+:root {
+  --bg: #F8F9FA; --surface: #FFFFFF; --surface-2: #F7F9FB; --border: #E9ECEF; --border-strong: #D0D5DD;
+  --fg: #212529; --fg-2: #737372; --fg-3: #ADB5BD;
+  --primary: #1C1C1C; --primary-fg: #FFFFFF; --accent: #E15119; --accent-tint: #FFF5F2; --link: #1570EF; --link-tint: #EFF8FF;
+  --ok-fg: #027A48; --ok-bg: #E7F6EE; --warn-fg: #92400E; --warn-bg: #FEF3C7; --err-fg: #B91C1C; --err-bg: #FEE2E2;
+  --info-fg: #175CD3; --info-bg: #D1E9FF; --chip-bg: #F2F4F7; --chip-fg: #1D2939;
+  --sev-high: #C2410C; --sev-high-bg: #FFEDD5;
+  --shadow: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06); --shadow-modal: 0 20px 25px rgba(0,0,0,.1), 0 10px 10px rgba(0,0,0,.04);
+  --overlay: rgba(0,0,0,.4);
+  --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141517; --surface: #1C1D20; --surface-2: #232428; --border: #2E3035; --border-strong: #3B3E44;
+  --fg: #ECEDEF; --fg-2: #A3A5AA; --fg-3: #6C6F75;
+  --primary: #ECEDEF; --primary-fg: #141517; --accent: #F06A33; --accent-tint: #2A1A13; --link: #6AA6FF; --link-tint: #16243A;
+  --ok-fg: #6EE7A8; --ok-bg: #12291E; --warn-fg: #FCD34D; --warn-bg: #2E2410; --err-fg: #FCA5A5; --err-bg: #331A1A;
+  --info-fg: #93C5FD; --info-bg: #172A45; --chip-bg: #2A2C30; --chip-fg: #E2E3E6;
+  --sev-high: #FDBA74; --sev-high-bg: #33200F;
+  --shadow: 0 4px 10px rgba(0,0,0,.4); --shadow-modal: 0 20px 30px rgba(0,0,0,.55); --overlay: rgba(0,0,0,.6);
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141517; --surface: #1C1D20; --surface-2: #232428; --border: #2E3035; --border-strong: #3B3E44;
+  --fg: #ECEDEF; --fg-2: #A3A5AA; --fg-3: #6C6F75;
+  --primary: #ECEDEF; --primary-fg: #141517; --accent: #F06A33; --accent-tint: #2A1A13; --link: #6AA6FF; --link-tint: #16243A;
+  --ok-fg: #6EE7A8; --ok-bg: #12291E; --warn-fg: #FCD34D; --warn-bg: #2E2410; --err-fg: #FCA5A5; --err-bg: #331A1A;
+  --info-fg: #93C5FD; --info-bg: #172A45; --chip-bg: #2A2C30; --chip-fg: #E2E3E6;
+  --sev-high: #FDBA74; --sev-high-bg: #33200F;
+  --shadow: 0 4px 10px rgba(0,0,0,.4); --shadow-modal: 0 20px 30px rgba(0,0,0,.55); --overlay: rgba(0,0,0,.6);
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+button, select, textarea, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+
+.app { display: flex; min-height: 100%; }
+.nav { width: 208px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding-block: 12px; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 8px; padding: 6px 16px 16px; font-weight: 700; }
+.logo-mark { width: 26px; height: 26px; border-radius: 6px; background: #1C1C1C; color: #E15119; display: grid; place-items: center; font-size: 13px; }
+.nav-label { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .06em; padding: 12px 16px 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 16px; color: var(--fg-2); background: none; border: 0; border-left: 2px solid transparent; text-align: left; font-size: 13px; width: 100%; }
+.nav-item:hover { color: var(--fg); background: var(--surface-2); }
+.nav-item.active { border-left-color: var(--accent); background: var(--accent-tint); color: var(--fg); font-weight: 500; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding-block: 10px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.crumbs { font-size: 13px; color: var(--fg-2); }
+.crumbs b { color: var(--fg); font-weight: 500; }
+.proto-badge { font-size: 11px; font-weight: 500; color: var(--warn-fg); background: var(--warn-bg); border-radius: 9999px; padding: 3px 10px; white-space: nowrap; }
+.body { padding-block: 24px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); flex: 1; min-width: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.card-h { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.card-h h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.card-b { padding: 16px; }
+.muted { color: var(--fg-2); }
+.small { font-size: 12px; }
+.mono { font-family: var(--mono); font-size: 12px; }
+
+.btn { border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-strong); background: var(--surface); }
+.btn:hover { background: var(--surface-2); }
+.btn-primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary); opacity: .88; }
+.btn-ghost { border-color: transparent; background: none; color: var(--link); padding-inline: 6px; }
+.btn-ghost:hover { background: var(--link-tint); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.seg { display: inline-flex; background: var(--chip-bg); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: none; border-radius: 6px; padding: 5px 12px; font-size: 13px; color: var(--fg-2); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+/* Status chips: mirror caseStatusAppearance tones */
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 2px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.s-require_action { color: var(--err-fg); background: var(--err-bg); }
+.chip.s-pending { color: var(--warn-fg); background: var(--warn-bg); }
+.chip.s-closed { color: var(--ok-fg); background: var(--ok-bg); }
+.chip.s-new { color: var(--info-fg); background: var(--info-bg); }
+.chip.s-processing { color: var(--info-fg); background: var(--info-bg); }
+.chip.s-processing::before { width: 9px; height: 9px; background: none; border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+.chip.sev { color: var(--sev-high); background: var(--sev-high-bg); }
+.chip.plain { color: var(--chip-fg); background: var(--chip-bg); }
+.chip.plain::before { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .chip.s-processing::before { animation: none; } }
+.pill-btn { border: 0; background: none; padding: 0; display: inline-flex; align-items: center; border-radius: 9999px; }
+.pill-btn .chip { padding-right: 6px; }
+.pill-btn .caret { margin-left: 2px; font-size: 10px; opacity: .7; }
+.pill-btn:disabled { cursor: default; }
+.new-tag { font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--accent); background: var(--accent-tint); border-radius: 4px; padding: 1px 6px; text-transform: uppercase; }
+
+/* ---------- Builder ---------- */
+.builder-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.steps { display: flex; flex-direction: column; }
+.step { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: start; }
+.step:last-child { border-bottom: 0; }
+.step-n { width: 24px; height: 24px; border-radius: 6px; background: var(--chip-bg); color: var(--fg-2); font-size: 12px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.step-text { min-width: 0; }
+.step-text .kind { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-3); }
+.tok { display: inline-block; border-radius: 4px; padding: 0 6px; background: var(--link-tint); color: var(--link); font-family: var(--mono); font-size: 12px; }
+.step.selected { background: var(--surface-2); }
+.step.is-new { box-shadow: inset 3px 0 0 var(--accent); }
+.step .row-actions { display: flex; gap: 4px; }
+.icon-btn { border: 0; background: none; color: var(--fg-3); border-radius: 6px; padding: 2px 6px; font-size: 13px; }
+.icon-btn:hover { color: var(--fg); background: var(--chip-bg); }
+.config { margin-top: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column; gap: 10px; }
+.config label.lbl { font-size: 12px; font-weight: 500; color: var(--fg-2); }
+.choice-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.choice { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 9999px; padding: 2px; }
+.choice[aria-pressed="true"] { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.choice .chip { pointer-events: none; }
+select { border: 1px solid var(--border-strong); border-radius: 6px; padding: 5px 8px; background: var(--surface); max-width: 100%; }
+.add-row { padding: 12px 16px; border-top: 1px solid var(--border); position: relative; }
+.step-wrap-pad { padding-bottom: 0; }
+.slash-menu { position: absolute; left: 16px; top: calc(100% - 6px); width: 300px; max-width: calc(100vw - 48px); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 6px; z-index: 20; max-height: 360px; overflow-y: auto; }
+.slash-menu .grp { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .05em; padding: 8px 8px 4px; }
+.slash-menu button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; border: 0; background: none; border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+.slash-menu button:hover, .slash-menu button:focus-visible { background: var(--surface-2); }
+.slash-menu button[disabled] { color: var(--fg-3); cursor: not-allowed; }
+.note { border-left: 3px solid var(--border-strong); padding: 2px 0 2px 10px; font-size: 12px; color: var(--fg-2); }
+.side-notes { display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+.side-notes h3 { font-size: 13px; font-weight: 500; margin: 0 0 4px; }
+.side-notes ul { margin: 0; padding-left: 18px; color: var(--fg-2); display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Case page ---------- */
+.case-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+.case-list .item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--border); background: none; padding: 12px 14px; }
+.case-list .item:last-child { border-bottom: 0; }
+.case-list .item:hover { background: var(--surface-2); }
+.case-list .item.active { background: var(--accent-tint); }
+.case-list .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.case-list .name { font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.case-list .row2 { font-size: 12px; color: var(--fg-2); margin-top: 2px; }
+
+.case-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.case-head { padding: 16px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.case-head h1 { font-size: 18px; font-weight: 500; margin: 0 0 8px; text-wrap: balance; }
+.head-pills { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.head-pills .lbl { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .05em; }
+.dates { font-size: 12px; color: var(--fg-2); text-align: right; font-variant-numeric: tabular-nums; }
+
+.pop-anchor { position: relative; display: inline-flex; }
+.popover { position: absolute; top: calc(100% + 6px); left: 0; width: 380px; max-width: calc(100vw - 40px); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); z-index: 30; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.popover .seg { width: 100%; }
+.popover .seg button { flex: 1; }
+.opt { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: none; border-radius: 6px; padding: 6px 8px; }
+.opt:hover { background: var(--surface-2); }
+.opt .check { color: var(--fg); font-size: 13px; }
+.opt[disabled] { cursor: not-allowed; opacity: .55; }
+.pop-foot { font-size: 11px; color: var(--fg-3); border-top: 1px solid var(--border); padding-top: 8px; }
+.act-list { display: flex; flex-direction: column; max-height: 260px; overflow-y: auto; }
+.act { display: grid; grid-template-columns: 76px minmax(0,1fr); gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.act:last-child { border-bottom: 0; }
+.act .when { color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.act .who { color: var(--fg-2); }
+.reopen-mark { color: var(--accent); font-weight: 500; }
+
+/* Timeline */
+.tl-wrap { overflow-x: auto; }
+.tl { display: flex; align-items: flex-start; min-width: 520px; padding: 18px 16px 8px; position: relative; }
+.tl::before { content: ""; position: absolute; left: 32px; right: 32px; top: 31px; height: 2px; background: var(--border); }
+.tl-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; border: 0; background: none; padding: 0 4px 6px; border-radius: 8px; }
+.tl-day:hover .dot { transform: scale(1.12); }
+.dot { width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border-strong); display: grid; place-items: center; font-size: 12px; position: relative; z-index: 1; transition: transform .12s; }
+.tl-day[aria-pressed="true"] .dot { border-color: var(--fg); box-shadow: 0 0 0 3px var(--chip-bg); }
+.dot .mk { font-size: 11px; line-height: 1; }
+.dot.has-status { border-color: var(--link); }
+.dot.has-reopen { border-color: var(--accent); color: var(--accent); }
+.tl-day .d-lbl { font-size: 12px; font-weight: 500; }
+.tl-day .d-sub { font-size: 11px; color: var(--fg-2); text-align: center; max-width: 120px; }
+.tl-detail { border-top: 1px solid var(--border); padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.tt-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tt-head b { font-weight: 500; }
+.tt-block { display: flex; flex-direction: column; gap: 4px; }
+.tt-block .ttl { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-3); }
+.tt-row { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 8px; font-size: 13px; align-items: baseline; }
+.tt-row .time { font-size: 12px; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.tt-row .by { color: var(--fg-2); font-size: 12px; }
+.arrow { color: var(--fg-3); margin-inline: 2px; }
+
+.sim-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--fg-2); }
+.sim-form { display: flex; flex-direction: column; gap: 12px; }
+.check-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.runlog { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.runlog .r { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 8px; align-items: baseline; }
+.out { font-size: 11px; font-weight: 500; border-radius: 4px; padding: 1px 6px; text-align: center; }
+.out.ok { color: var(--ok-fg); background: var(--ok-bg); }
+.out.kept { color: var(--chip-fg); background: var(--chip-bg); }
+.out.fail { color: var(--err-fg); background: var(--err-bg); }
+.out.skip { color: var(--fg-2); background: none; border: 1px solid var(--border); }
+.out.sys { color: var(--info-fg); background: var(--info-bg); }
+
+/* Modal + toast */
+.overlay { position: fixed; inset: 0; background: var(--overlay); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.modal { width: 440px; max-width: 100%; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-modal); }
+.modal-h { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 500; }
+.modal-b { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.modal-f { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+textarea { width: 100%; min-height: 72px; border: 1px solid var(--border-strong); border-radius: 6px; padding: 8px; background: var(--surface); resize: vertical; }
+.toast { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 340px; max-width: calc(100vw - 40px); background: var(--primary); color: var(--primary-fg); border-radius: 8px; padding: 10px 14px; font-size: 13px; box-shadow: var(--shadow); z-index: 60; }
+
+@media (max-width: 960px) {
+  .builder-grid, .case-grid, .sim-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .app { flex-direction: column; }
+  .nav { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 6px 8px; border-right: 0; border-bottom: 1px solid var(--border); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+  .nav .logo { padding: 6px 8px; }
+  .nav-label { display: none; }
+  .nav-item { width: auto; border-left: 0; border-bottom: 2px solid transparent; padding: 8px 10px; }
+  .nav-item.active { border-bottom-color: var(--accent); }
+  .topbar, .body { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .dates { text-align: left; }
+}
+</style>
+
+<div class="app">
+  <aside class="nav" aria-label="Main">
+    <div class="logo"><span class="logo-mark">N</span>Notch</div>
+    <div class="nav-label">Back office</div>
+    <button class="nav-item" id="nav-builder" data-view="builder">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Agents
+    </button>
+    <button class="nav-item" id="nav-case" data-view="case">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 6.5h11" stroke="currentColor" stroke-width="1.5"/></svg>
+      Cases
+    </button>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs" id="crumbs"></div>
+      <span class="proto-badge">Prototype: concept validation only. Not final design.</span>
+    </header>
+    <div class="body" id="view"></div>
+  </div>
+</div>
+<div id="layer"></div>
+
+<script>
+(function () {
+  // ---------- Domain ----------
+  // Real enum (common/models/src/csr/cases.ts): open, new, processing, require_action, pending, escalated, time_demand_detected, closed.
+  // Settable by Set status and by a person: the three statuses the product shows as distinct, user-meaningful states.
+  var SETTABLE = ['require_action', 'pending', 'closed'];
+  var LABEL = { require_action: 'Action required', pending: 'Pending', closed: 'Settled', new: 'New', processing: 'Processing', open: 'Open', escalated: 'Action required', time_demand_detected: 'Action required' };
+  function chip(status, extra) { return '<span class="chip s-' + status + (extra ? ' ' + extra : '') + '">' + LABEL[status] + '</span>'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function matchStatus(answer) {
+    var a = String(answer || '').trim().toLowerCase();
+    for (var i = 0; i < SETTABLE.length; i++) {
+      var k = SETTABLE[i];
+      if (k === a || LABEL[k].toLowerCase() === a) return k;
+    }
+    return null;
+  }
+
+  var AGENT = 'Claims intake agent';
+  var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  var state = {
+    view: 'builder',
+    surface: 'agent',
+    selectedStep: null,
+    slashOpen: false,
+    newStepId: null,
+    sequences: {
+      agent: [
+        { id: 'a1', type: 'determine', variable: 'claim_stage', options: ['Action required', 'Pending', 'Settled'], fromStatuses: true },
+        { id: 'a2', type: 'setStatus', mode: 'answer', value: 'pending', variable: 'claim_stage' }
+      ],
+      manager: [
+        { id: 'm1', type: 'determine', variable: 'injury_level', options: ['Critical', 'High', 'Medium', 'Low'], fromSeverity: true },
+        { id: 'm2', type: 'setSeverity', variable: 'injury_level' },
+        { id: 'm3', type: 'if', text: 'If the document is a police report' },
+        { id: 'm4', type: 'setStatus', mode: 'fixed', value: 'require_action', indent: true },
+        { id: 'm5', type: 'route', text: AGENT }
+      ]
+    },
+    caseData: {
+      status: 'require_action',
+      processing: false,
+      clock: { day: 2, minutes: 10 * 60 },
+      events: [
+        { day: 0, time: '09:00', kind: 'doc', text: 'FNOL form' },
+        { day: 0, time: '09:04', kind: 'status', from: null, to: 'pending', by: 'Run finished (no Set status step)', reopen: false },
+        { day: 1, time: '14:10', kind: 'doc', text: 'Police report' },
+        { day: 1, time: '14:13', kind: 'status', from: 'pending', to: 'require_action', by: 'Case manager · step 4', reopen: false }
+      ],
+      runlog: [
+        { out: 'ok', text: 'Case manager · Set status to Action required → Pending → Action required' },
+        { out: 'kept', text: AGENT + ' · Set status to the answer of claim_stage: "Action required" → already Action required, nothing recorded' },
+        { out: 'sys', text: 'Run finished: a step set the status, so the run keeps it' }
+      ],
+      selectedDay: 1
+    },
+    list: [
+      { id: 'c4821', name: 'Claim #4821 · Rear-end collision', updated: 'Updated 1 day ago', current: true },
+      { id: 'c4822', name: 'Claim #4822 · Hail damage', status: 'pending', visited: false, updated: 'Created 20m ago', note: 'Case manager set Pending before anyone opened it' },
+      { id: 'c4790', name: 'Claim #4790 · Windshield', status: 'closed', visited: true, updated: 'Updated 4 days ago' }
+    ],
+    statusPop: null,   // null | 'status' | 'activity'
+    modal: null,
+    toast: null,
+    sim: { doc: 'Medical bill', answer: 'Pending', openNextSteps: true }
+  };
+
+  var view = document.getElementById('view');
+  var layer = document.getElementById('layer');
+  var crumbs = document.getElementById('crumbs');
+  var toastTimer = null;
+
+  function toast(msg) {
+    state.toast = msg; renderLayer();
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { state.toast = null; renderLayer(); }, 4200);
+  }
+
+  // ---------- Builder ----------
+  var MENU = {
+    agent: [
+      { grp: 'Logic', items: ['If / Else', 'Add a group'] },
+      { grp: 'Decide', items: ['Determine', 'Data conditions', 'Text conditions'] },
+      { grp: 'Case', items: ['Set status', 'Set severity'] },
+      { grp: 'Act', items: ['Run task', 'Run workflow', 'Fetch Data', 'Web search', 'Look up', 'Knowledge'] },
+      { grp: 'Flow', items: ['Run next step', 'End'] }
+    ],
+    manager: [
+      { grp: 'Logic', items: ['If / Else', 'Add a group'] },
+      { grp: 'Decide', items: ['Determine', 'Data conditions', 'Text conditions', 'Fetch Data'] },
+      { grp: 'Case', items: ['Set status', 'Set severity'] },
+      { grp: 'Route', items: ['Route to agent', 'Route to step', 'End'] }
+    ]
+  };
+
+  function stepSentence(step, seq) {
+    if (step.type === 'determine') {
+      return '<div class="kind">Determine</div>Determine <span class="tok">' + step.variable + '</span> from the new documents<div class="small muted">Options: ' + step.options.map(esc).join(', ') +
+        (step.fromStatuses ? ' · filled from the case statuses' : step.fromSeverity ? ' · filled from the severity levels' : '') + '</div>';
+    }
+    if (step.type === 'setSeverity') return '<div class="kind">Set severity</div>Set severity to the answer of <span class="tok">' + step.variable + '</span>';
+    if (step.type === 'if') return '<div class="kind">Condition</div>' + esc(step.text);
+    if (step.type === 'route') return '<div class="kind">Route to agent</div>Route the case to <b>' + esc(step.text) + '</b>';
+    if (step.type === 'setStatus') {
+      var s = '<div class="kind">Set status <span class="new-tag">New</span></div>';
+      if (step.mode === 'fixed') s += 'Set status to ' + chip(step.value);
+      else s += 'Set status to the answer of <span class="tok">' + esc(step.variable || 'choose a Determine') + '</span>';
+      return s;
+    }
+    return '';
+  }
+
+  function determinesBefore(seq, idx) {
+    return seq.slice(0, idx).filter(function (s) { return s.type === 'determine'; });
+  }
+
+  function configHtml(step, seq, idx) {
+    var dets = determinesBefore(seq, idx);
+    var html = '<div class="config" data-stop>';
+    html += '<label class="lbl">Set the status to</label><div class="seg" role="group" aria-label="Value source">' +
+      '<button data-act="mode" data-id="' + step.id + '" data-mode="fixed" aria-pressed="' + (step.mode === 'fixed') + '">A fixed status</button>' +
+      '<button data-act="mode" data-id="' + step.id + '" data-mode="answer" aria-pressed="' + (step.mode === 'answer') + '">The answer of a Determine</button></div>';
+    if (step.mode === 'fixed') {
+      html += '<div class="choice-row">' + SETTABLE.map(function (k) {
+        return '<button class="choice" data-act="fixed" data-id="' + step.id + '" data-val="' + k + '" aria-pressed="' + (step.value === k) + '">' + chip(k) + '</button>';
+      }).join('') + '</div>';
+    } else {
+      if (!dets.length) {
+        html += '<div class="note">Add a Determine step above this one first. Its options can be filled from the case statuses in one click.</div>';
+      } else {
+        html += '<div class="field"><label for="det-' + step.id + '">Determine</label><select id="det-' + step.id + '" data-act="variable" data-id="' + step.id + '">' +
+          dets.map(function (d) { return '<option value="' + d.variable + '"' + (d.variable === step.variable ? ' selected' : '') + '>' + d.variable + '</option>'; }).join('') + '</select></div>';
+        var det = dets.filter(function (d) { return d.variable === step.variable; })[0];
+        if (det && !det.fromStatuses) {
+          html += '<div class="note">Some options of <span class="tok">' + det.variable + '</span> are not statuses, so the step fails when one of them is the answer. <button class="btn-ghost btn" data-act="fill" data-det="' + det.id + '">Fill options from the case statuses</button></div>';
+        }
+      }
+    }
+    html += '<div class="note">New and Processing are not offered: Notch sets them. A case that is Settled is reopened when this step sets another status, and the timeline marks it.</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderBuilder() {
+    var seq = state.sequences[state.surface];
+    var who = state.surface === 'agent' ? AGENT : 'Case manager';
+    crumbs.innerHTML = 'Agents / <b>' + who + '</b> / Sequence';
+    var h = '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<div class="seg" role="group" aria-label="Sequence">' +
+      '<button data-act="surface" data-val="agent" aria-pressed="' + (state.surface === 'agent') + '">Back-office agent</button>' +
+      '<button data-act="surface" data-val="manager" aria-pressed="' + (state.surface === 'manager') + '">Case manager</button></div>' +
+      '<button class="btn btn-primary" data-act="goto-case">Try it on a case →</button></div>';
+    h += '<div class="builder-grid"><section class="card"><div class="card-h"><h2>' + who + ' · when new documents arrive</h2><span class="small muted">' + seq.length + ' steps</span></div><div class="steps">';
+    seq.forEach(function (step, i) {
+      var sel = state.selectedStep === step.id;
+      h += '<div class="step' + (sel ? ' selected' : '') + (state.newStepId === step.id ? ' is-new' : '') + '" data-act="select" data-id="' + step.id + '"' + (step.indent ? ' style="padding-left:44px"' : '') + '>' +
+        '<span class="step-n">' + (i + 1) + '</span><div class="step-text">' + stepSentence(step, seq) + (sel && step.type === 'setStatus' ? configHtml(step, seq, i) : '') + '</div>' +
+        '<div class="row-actions">' + (step.type === 'setStatus' ? '<button class="icon-btn" data-act="select" data-id="' + step.id + '" aria-label="Edit step">Edit</button>' : '') +
+        '<button class="icon-btn" data-act="delete" data-id="' + step.id + '" aria-label="Delete step">✕</button></div></div>';
+    });
+    h += '</div><div class="add-row"><button class="btn" data-act="slash" aria-expanded="' + state.slashOpen + '">/ Add step</button>';
+    if (state.slashOpen) {
+      h += '<div class="slash-menu" role="menu" data-stop>';
+      MENU[state.surface].forEach(function (g) {
+        h += '<div class="grp">' + g.grp + '</div>';
+        g.items.forEach(function (it) {
+          var live = it === 'Set status';
+          h += '<button role="menuitem" data-act="pick" data-val="' + it + '"' + (live ? '' : ' disabled title="Not part of this prototype"') + '><span>' + it + '</span>' + (live ? '<span class="new-tag">New</span>' : '') + '</button>';
+        });
+      });
+      h += '</div>';
+    }
+    h += '</div></section>';
+    h += '<aside class="card card-b side-notes">' +
+      '<div><h3>What Set status does</h3><ul>' +
+      '<li>Sets the case to <b>Action required</b>, <b>Pending</b> or <b>Settled</b>: a fixed status, or the answer of a Determine.</li>' +
+      '<li>Same status as now: nothing is recorded.</li>' +
+      '<li>An answer that is not a status fails the step in Run history, with the answer it got.</li>' +
+      '<li>A status set by a step is kept when the run finishes. Without a step, the run keeps today\'s rule (open next steps → Action required, otherwise Pending).</li></ul></div>' +
+      '<div><h3>Where it is offered</h3><ul><li>Back-office agents: in the Case section of the <span class="mono">/</span> menu.</li><li>Case manager: as a triage action, next to Set severity.</li></ul></div>' +
+      '<div><h3>Try</h3><ul><li>Switch to <b>Case manager</b> and open the reduced <span class="mono">/</span> menu.</li><li>Click step 2 and switch it to a fixed status.</li><li>Then <b>Try it on a case</b> and run a document through.</li></ul></div>' +
+      '</aside></div>';
+    view.innerHTML = h;
+  }
+
+  // ---------- Case page ----------
+  function clockLabel() {
+    var c = state.caseData.clock;
+    var hh = Math.floor(c.minutes / 60), mm = c.minutes % 60;
+    return { day: c.day, time: (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm };
+  }
+  function tick(min) {
+    var c = state.caseData.clock;
+    c.minutes += min;
+    while (c.minutes >= 18 * 60) { c.minutes -= 9 * 60; c.day = Math.min(c.day + 1, 6); c.minutes = Math.max(c.minutes, 9 * 60); }
+  }
+
+  function statusChanges() { return state.caseData.events.filter(function (e) { return e.kind === 'status'; }); }
+
+  function pillHtml() {
+    var cd = state.caseData;
+    var st = cd.processing ? 'processing' : cd.status;
+    return '<span class="pop-anchor"><button class="pill-btn" data-act="pill" aria-haspopup="true" aria-expanded="' + (!!state.statusPop) + '"' + (cd.processing ? ' disabled title="Notch is processing a document"' : '') + '>' +
+      '<span class="chip s-' + st + '">' + LABEL[st] + (cd.processing ? '' : '<span class="caret">▾</span>') + '</span></button>' + (state.statusPop ? popHtml() : '') + '</span>';
+  }
+
+  function popHtml() {
+    var cd = state.caseData;
+    var h = '<div class="popover" role="dialog" aria-label="Case status" data-stop><div class="seg" role="group">' +
+      '<button data-act="poptab" data-val="status" aria-pressed="' + (state.statusPop === 'status') + '">Status</button>' +
+      '<button data-act="poptab" data-val="activity" aria-pressed="' + (state.statusPop === 'activity') + '">Activity</button></div>';
+    if (state.statusPop === 'status') {
+      SETTABLE.forEach(function (k) {
+        h += '<button class="opt" data-act="manual" data-val="' + k + '">' + chip(k) + (cd.status === k ? '<span class="check">✓</span>' : '') + '</button>';
+      });
+      h += '<div class="pop-foot">' + (cd.status === 'closed' ? 'This case is Settled. Picking another status reopens it.' : 'New and Processing are set by Notch and can\'t be picked.') + '</div>';
+    } else {
+      var ch = statusChanges().slice().reverse();
+      h += '<div class="act-list">' + (ch.length ? ch.map(function (e) {
+        return '<div class="act"><span class="when">' + DAYS[e.day] + ' ' + e.time + '</span><span>' +
+          (e.from ? chip(e.from) + '<span class="arrow">→</span>' : 'Set to ') + chip(e.to) + (e.reopen ? ' <span class="reopen-mark">↺ Reopened</span>' : '') +
+          '<br><span class="who">' + esc(e.by) + (e.reason ? ' · "' + esc(e.reason) + '"' : '') + '</span></span></div>';
+      }).join('') : '<div class="muted small">No status changes yet</div>') + '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function timelineHtml() {
+    var cd = state.caseData;
+    var maxDay = Math.max(cd.clock.day, 2);
+    var days = [];
+    for (var d = 0; d <= maxDay; d++) days.push(d);
+    var h = '<div class="tl-wrap"><div class="tl" role="group" aria-label="Case timeline">';
+    days.forEach(function (d) {
+      var evs = cd.events.filter(function (e) { return e.day === d; });
+      var docs = evs.filter(function (e) { return e.kind === 'doc'; });
+      var sts = evs.filter(function (e) { return e.kind === 'status'; });
+      var reopen = sts.some(function (e) { return e.reopen; });
+      var cls = 'dot' + (reopen ? ' has-reopen' : sts.length ? ' has-status' : '');
+      var mk = reopen ? '↺' : sts.length ? (sts.length > 1 ? sts.length : '●') : docs.length ? '' : '';
+      var sub = docs.length ? docs.map(function (x) { return x.text; }).join(', ') : sts.length ? 'Status change' : 'No activity';
+      h += '<button class="tl-day" data-act="day" data-val="' + d + '" aria-pressed="' + (cd.selectedDay === d) + '"' + (evs.length ? '' : ' disabled') + '>' +
+        '<span class="' + cls + '"><span class="mk">' + mk + '</span></span><span class="d-lbl">' + DAYS[d] + '</span><span class="d-sub">' + esc(sub) + '</span></button>';
+    });
+    h += '</div></div>';
+    var sel = cd.events.filter(function (e) { return e.day === cd.selectedDay; });
+    if (sel.length) {
+      var docs = sel.filter(function (e) { return e.kind === 'doc'; });
+      var sts = sel.filter(function (e) { return e.kind === 'status'; });
+      var inEffect = statusAtEndOf(cd.selectedDay);
+      h += '<div class="tl-detail"><div class="tt-head"><b>' + DAYS[cd.selectedDay] + '</b>' + (sts.length ? '<span class="chip plain">Status change (' + sts.length + ')</span>' : '') +
+        '<span class="small muted">In effect at end of day:</span>' + (inEffect ? chip(inEffect) : '<span class="small muted">none</span>') + '</div>';
+      if (docs.length) {
+        h += '<div class="tt-block"><span class="ttl">Documents</span>' + docs.map(function (e) { return '<div class="tt-row"><span class="time">' + e.time + '</span><span>' + esc(e.text) + '</span></div>'; }).join('') + '</div>';
+      }
+      if (sts.length) {
+        h += '<div class="tt-block"><span class="ttl">Status</span>' + sts.map(function (e) {
+          return '<div class="tt-row"><span class="time">' + e.time + '</span><span>' + (e.from ? chip(e.from) + '<span class="arrow">→</span>' : 'Set to ') + chip(e.to) +
+            (e.reopen ? ' <span class="reopen-mark">↺ Reopened</span>' : '') + ' <span class="by">· ' + esc(e.by) + (e.reason ? ' · "' + esc(e.reason) + '"' : '') + '</span></span></div>';
+        }).join('') + '</div>';
+      }
+      h += '</div>';
+    }
+    return h;
+  }
+
+  function statusAtEndOf(day) {
+    var s = null;
+    state.caseData.events.forEach(function (e) { if (e.kind === 'status' && e.day <= day) s = e.to; });
+    return s;
+  }
+
+  function renderCase() {
+    var cd = state.caseData;
+    crumbs.innerHTML = 'Cases / <b>Claim #4821</b>';
+    var h = '<div class="case-grid"><nav class="card case-list" aria-label="Cases">';
+    state.list.forEach(function (c) {
+      var st = c.current ? (cd.processing ? 'processing' : cd.status) : (c.visited ? c.status : 'new');
+      h += '<button class="item' + (c.current ? ' active' : '') + '" data-act="open-case" data-id="' + c.id + '"><span class="row1"><span class="name">' + esc(c.name) + '</span>' + chip(st) + '</span>' +
+        '<span class="row2">' + (c.current ? 'Updated ' + DAYS[cd.clock.day] + ' ' + clockLabel().time : esc(c.updated)) + '</span></button>';
+    });
+    h += '</nav><div class="case-col">';
+    h += '<section class="card case-head"><div><h1>Claim #4821 · Rear-end collision</h1><div class="head-pills">' +
+      '<span class="lbl">Status</span>' + pillHtml() + '<span class="lbl" style="margin-left:8px">Severity</span><span class="chip sev">High</span></div></div>' +
+      '<div class="dates">Created: Mon 09:00<br>Updated: ' + DAYS[cd.clock.day] + ' ' + clockLabel().time + '</div></section>';
+    h += '<section class="card"><div class="card-h"><h2>Timeline</h2><span class="small muted">Click a day to see what happened</span></div>' + timelineHtml() + '</section>';
+    h += '<div class="sim-grid"><section class="card"><div class="card-h"><h2>Simulator: a new document arrives</h2></div><div class="card-b sim-form">' +
+      '<div class="field"><label for="sim-doc">Document</label><select id="sim-doc" data-act="sim" data-key="doc">' +
+      ['Medical bill', 'Police report', 'Settlement letter', 'Customer email'].map(function (d) { return '<option' + (state.sim.doc === d ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="sim-ans">What Determine <span class="mono">claim_stage</span> answers</label><select id="sim-ans" data-act="sim" data-key="answer">' +
+      ['Action required', 'Pending', 'Settled', 'Waiting on lawyer'].map(function (d) { return '<option' + (state.sim.answer === d ? ' selected' : '') + '>' + d + (d === 'Waiting on lawyer' ? ' (not a status)' : '') + '</option>'; }).join('') + '</select></div>' +
+      '<label class="check-row"><input type="checkbox" id="sim-next" data-act="sim" data-key="openNextSteps"' + (state.sim.openNextSteps ? ' checked' : '') + '> The case has open next steps</label>' +
+      '<button class="btn btn-primary" data-act="run"' + (cd.processing ? ' disabled' : '') + '>' + (cd.processing ? 'Processing…' : 'Upload document and run') + '</button>' +
+      '<div class="small muted">Runs the case manager, then the ' + AGENT + ', as configured in the builder.</div></div></section>';
+    h += '<section class="card"><div class="card-h"><h2>Run history · last run</h2></div><div class="card-b runlog">' +
+      cd.runlog.map(function (r) { return '<div class="r"><span class="out ' + r.out + '">' + { ok: 'Changed', kept: 'Kept', fail: 'Failed', sys: 'Run', skip: 'Skipped' }[r.out] + '</span><span>' + esc(r.text) + '</span></div>'; }).join('') +
+      '</div></section></div>';
+    h += '</div></div>';
+    view.innerHTML = h;
+  }
+
+  // ---------- Behaviour ----------
+  function recordStatus(to, by, extra) {
+    var cd = state.caseData;
+    var from = cd.status;
+    if (from === to) return false;
+    var t = clockLabel();
+    cd.events.push(Object.assign({ day: t.day, time: t.time, kind: 'status', from: from, to: to, by: by, reopen: from === 'closed' }, extra || {}));
+    cd.status = to;
+    cd.selectedDay = t.day;
+    return true;
+  }
+
+  function runSetStatusSteps(seq, who, answers, log) {
+    var set = false;
+    seq.forEach(function (step, i) {
+      if (step.type !== 'setStatus') return;
+      if (step.type === 'setStatus' && step.indent && state.sim.doc !== 'Police report') {
+        log.push({ out: 'skip', text: who + ' · step ' + (i + 1) + ' (Set status) skipped: the document is not a police report' });
+        return;
+      }
+      var target, label;
+      if (step.mode === 'fixed') { target = step.value; label = 'Set status to ' + LABEL[target]; }
+      else {
+        var ans = answers[step.variable];
+        label = 'Set status to the answer of ' + step.variable + ': "' + ans + '"';
+        target = matchStatus(ans);
+        if (!target) { log.push({ out: 'fail', text: who + ' · ' + label + ' → no status matches the answer. Status not changed.' }); return; }
+      }
+      var before = state.caseData.status;
+      var changed = recordStatus(target, who + ' · step ' + (i + 1));
+      set = set || changed || before === target;
+      if (changed) log.push({ out: 'ok', text: who + ' · ' + label + ' → ' + LABEL[before] + ' → ' + LABEL[target] + (before === 'closed' ? ' (case reopened)' : '') });
+      else log.push({ out: 'kept', text: who + ' · ' + label + ' → already ' + LABEL[target] + ', nothing recorded' });
+      tick(2);
+    });
+    return set;
+  }
+
+  function simulateRun() {
+    var cd = state.caseData;
+    tick(180);
+    var t = clockLabel();
+    cd.events.push({ day: t.day, time: t.time, kind: 'doc', text: state.sim.doc });
+    cd.selectedDay = t.day;
+    cd.processing = true;
+    var wasClosedBefore = cd.status === 'closed';
+    state.statusPop = null;
+    render();
+    setTimeout(function () {
+      var log = [];
+      tick(3);
+      var answers = { claim_stage: state.sim.answer, injury_level: 'High' };
+      var setByManager = runSetStatusSteps(state.sequences.manager, 'Case manager', answers, log);
+      var setByAgent = runSetStatusSteps(state.sequences.agent, AGENT, answers, log);
+      if (setByManager || setByAgent) {
+        log.push({ out: 'sys', text: 'Run finished: a step set the status, so the run keeps it' });
+      } else {
+        var def = state.sim.openNextSteps ? 'require_action' : 'pending';
+        var wasClosed = cd.status === 'closed';
+        var changed = recordStatus(def, 'Run finished: new document' + (state.sim.openNextSteps ? ', open next steps' : ', no open next steps'));
+        log.push({ out: 'sys', text: 'Run finished, no step set the status → ' + LABEL[def] + (changed ? '' : ' (unchanged)') + (wasClosed && changed ? '. A new document reopened a Settled case' : '') });
+      }
+      cd.processing = false;
+      cd.runlog = log;
+      render();
+      var reopened = wasClosedBefore && cd.status !== 'closed';
+      toast(reopened ? 'Case reopened: it was Settled and the run set it to ' + LABEL[cd.status] + '.' : 'Run finished. Status: ' + LABEL[cd.status] + '.');
+    }, 1300);
+  }
+
+  function manualPick(k) {
+    var cd = state.caseData;
+    if (k === cd.status) { state.statusPop = null; render(); return; }
+    if (cd.status === 'closed') {
+      state.modal = { kind: 'reopen', to: k, reason: '' };
+      state.statusPop = null;
+      render(); renderLayer();
+      setTimeout(function () { var ta = document.getElementById('reopen-reason'); if (ta) ta.focus(); }, 0);
+      return;
+    }
+    tick(15);
+    var from = cd.status;
+    recordStatus(k, 'Maor Nakash');
+    state.statusPop = null;
+    render();
+    toast('Status changed: ' + LABEL[from] + ' → ' + LABEL[k] + '.');
+  }
+
+  function renderLayer() {
+    var h = '';
+    if (state.modal && state.modal.kind === 'reopen') {
+      h += '<div class="overlay" data-act="modal-cancel"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mh" data-stop>' +
+        '<div class="modal-h" id="mh">Reopen this case?</div><div class="modal-b">' +
+        '<div>Claim #4821 is <b>Settled</b>. Changing it to ' + chip(state.modal.to) + ' reopens it.</div>' +
+        '<ul class="small muted" style="margin:0;padding-left:18px"><li>The timeline marks the reopen, with your name and the reason.</li><li>Sequences run again on the next document, as on any open case.</li></ul>' +
+        '<div class="field"><label for="reopen-reason">Reason (optional)</label><textarea id="reopen-reason" placeholder="e.g. Customer disputed the settlement amount">' + esc(state.modal.reason) + '</textarea></div>' +
+        '</div><div class="modal-f"><button class="btn" data-act="modal-cancel">Cancel</button><button class="btn btn-primary" data-act="modal-reopen">Reopen case</button></div></div></div>';
+    }
+    if (state.toast) h += '<div class="toast" role="status">' + esc(state.toast) + '</div>';
+    layer.innerHTML = h;
+  }
+
+  function render() {
+    document.getElementById('nav-builder').classList.toggle('active', state.view === 'builder');
+    document.getElementById('nav-case').classList.toggle('active', state.view === 'case');
+    if (state.view === 'builder') renderBuilder(); else renderCase();
+  }
+
+  function findStep(id) {
+    var seq = state.sequences[state.surface];
+    for (var i = 0; i < seq.length; i++) if (seq[i].id === id) return seq[i];
+    return null;
+  }
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-act]');
+    var inStop = ev.target.closest('[data-stop]');
+    if (!t) {
+      if (!inStop && (state.slashOpen || state.statusPop)) { state.slashOpen = false; state.statusPop = null; render(); }
+      return;
+    }
+    var act = t.getAttribute('data-act');
+    var id = t.getAttribute('data-id');
+    var val = t.getAttribute('data-val');
+    switch (act) {
+      case 'surface': state.surface = val; state.selectedStep = null; state.slashOpen = false; render(); break;
+      case 'goto-case': state.view = 'case'; render(); break;
+      case 'select':
+        if (ev.target.closest('.config')) return;
+        if (ev.target.closest('[data-act="delete"]')) return;
+        var st = findStep(id);
+        state.selectedStep = st && st.type === 'setStatus' ? (state.selectedStep === id && t.classList.contains('step') ? id : id) : null;
+        render(); break;
+      case 'delete':
+        var seq = state.sequences[state.surface];
+        state.sequences[state.surface] = seq.filter(function (s) { return s.id !== id; });
+        if (state.selectedStep === id) state.selectedStep = null;
+        render(); break;
+      case 'slash': state.slashOpen = !state.slashOpen; render(); break;
+      case 'pick':
+        if (val === 'Set status') {
+          var nid = 's' + Date.now();
+          var seq2 = state.sequences[state.surface];
+          var dets = seq2.filter(function (s) { return s.type === 'determine'; });
+          seq2.push({ id: nid, type: 'setStatus', mode: 'fixed', value: 'pending', variable: dets.length ? dets[dets.length - 1].variable : null });
+          state.selectedStep = nid; state.newStepId = nid; state.slashOpen = false;
+          render();
+        }
+        break;
+      case 'mode': var s1 = findStep(id); s1.mode = t.getAttribute('data-mode'); if (!s1.variable) { var d1 = state.sequences[state.surface].filter(function (s) { return s.type === 'determine'; }); s1.variable = d1.length ? d1[0].variable : null; } render(); break;
+      case 'fixed': findStep(id).value = val; render(); break;
+      case 'fill':
+        var det = findStep(t.getAttribute('data-det'));
+        det.options = SETTABLE.map(function (k) { return LABEL[k]; }); det.fromStatuses = true; det.fromSeverity = false;
+        render(); toast('Options of ' + det.variable + ' filled from the case statuses.'); break;
+      case 'pill': state.statusPop = state.statusPop ? null : 'status'; render(); break;
+      case 'poptab': state.statusPop = val; render(); break;
+      case 'manual': manualPick(val); break;
+      case 'day': state.caseData.selectedDay = +val; render(); break;
+      case 'run': simulateRun(); break;
+      case 'open-case':
+        var c = state.list.filter(function (x) { return x.id === id; })[0];
+        if (c && !c.current) {
+          var wasNew = !c.visited; c.visited = true; render();
+          toast(wasNew ? c.name.split(' · ')[0] + ' opened: the New label is cleared for everyone. Its status stays ' + LABEL[c.status] + ', set by the case manager before anyone opened it.' : 'This prototype only opens Claim #4821.');
+        }
+        break;
+      case 'modal-cancel':
+        if (ev.target.closest('.modal') && !ev.target.closest('button')) return;
+        state.modal = null; renderLayer(); break;
+      case 'modal-reopen':
+        var ta = document.getElementById('reopen-reason');
+        tick(15);
+        recordStatus(state.modal.to, 'Maor Nakash', { reason: ta ? ta.value.trim() : '' });
+        state.modal = null; render(); renderLayer();
+        toast('Case reopened: Settled → ' + LABEL[state.caseData.status] + '.');
+        break;
+    }
+  });
+
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    var act = t.getAttribute('data-act');
+    if (act === 'variable') { findStep(t.getAttribute('data-id')).variable = t.value; render(); }
+    if (act === 'sim') { var key = t.getAttribute('data-key'); state.sim[key] = t.type === 'checkbox' ? t.checked : t.value; }
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      if (state.modal) { state.modal = null; renderLayer(); }
+      else if (state.slashOpen || state.statusPop) { state.slashOpen = false; state.statusPop = null; render(); }
+    }
+  });
+
+  document.querySelectorAll('.nav-item').forEach(function (b) {
+    b.addEventListener('click', function () { state.view = b.getAttribute('data-view'); state.slashOpen = false; state.statusPop = null; render(); });
+  });
+
+  render();
+})();
+</script>
