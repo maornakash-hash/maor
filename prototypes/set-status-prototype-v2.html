@@ -213,6 +213,73 @@ svg { flex-shrink: 0; }
 .why .card { padding: 12px 14px; font-size: 13px; color: var(--fg-2); }
 .why .card b { color: var(--fg); font-weight: 500; display: block; margin-bottom: 4px; }
 
+/* ---------- back-office agent page ---------- */
+.stage { flex: 1; min-width: 0; display: flex; gap: 8px; }
+.stage > .panel { flex: 1; }
+.bx-side { width: 248px; flex-shrink: 0; background: #FFF; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 4px 14.5px 3px rgba(160,160,160,.10); display: flex; flex-direction: column; overflow-y: auto; }
+.bx-side-h { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
+.bx-side-h h2 { font-size: 18px; font-weight: 500; margin: 0; }
+.bx-search { padding: 10px 16px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: #737372; display: flex; gap: 8px; align-items: center; }
+.bx-list { padding: 8px; display: grid; gap: 4px; }
+.bx-list button { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border: 0; background: none; border-radius: 8px; font-size: 14px; text-align: left; width: 100%; color: #1C1C1C; white-space: nowrap; }
+.bx-list button:hover { background: var(--hover); }
+.bx-list button.on { background: #F2F4F7; }
+.adot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; background: radial-gradient(circle at 30% 30%, #7CE3F0, #0BA5C2); }
+.adot.p { background: radial-gradient(circle at 30% 30%, #B7A8FF, #6A4FF0); } .adot.g { background: radial-gradient(circle at 30% 30%, #8BE3B1, #12B76A); }
+.bx-main { flex: 1; min-width: 0; background: #FFF; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 4px 14.5px 3px rgba(160,160,160,.10); display: flex; flex-direction: column; overflow: hidden; }
+.bx-top { min-height: 60px; display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.bx-crumb { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #1C1C1C; }
+.bx-crumb b { font-weight: 500; }
+.bx-draft { font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 999px; background: #F4F4F4; color: #4F4F4F; }
+.bx-saved { color: #737372; display: flex; align-items: center; gap: 6px; }
+.bx-acts { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.bx-pub { height: 32px; padding: 0 14px; border-radius: 24px; background: #1C1C1C; color: #FFF; font-size: 12px; font-weight: 500; border: 0; display: inline-flex; align-items: center; gap: 6px; }
+.bx-content { flex: 1; overflow-y: auto; padding: 32px 32px 200px; display: flex; flex-direction: column; gap: 16px; }
+.bx-card { background: #FFF; border: 1px solid var(--line); border-radius: 12px; padding: 24px; box-shadow: 0 4px 14.5px 3px rgba(160,160,160,.10); display: flex; flex-direction: column; gap: 20px; }
+.bx-card-h { display: flex; align-items: flex-start; gap: 8px; }
+.bx-card-h h3 { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+.bx-card-h p { font-size: 14px; color: rgba(0,0,0,.6); margin: 0; }
+.bx-card-h .chev { margin-left: auto; color: #1C1C1C; display: flex; gap: 14px; }
+.bx-head { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px 16px; padding: 12px 20px; }
+.bx-head h1 { font-size: 16px; font-weight: 600; margin: 0; }
+.bx-mode { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #039855; background: #E5F7EF; border-radius: 999px; padding: 4px 10px; }
+.bx-head .desc { color: #4F4F4F; font-size: 13.5px; }
+.bx-collapsed { padding: 20px 24px; }
+.bx-seq { display: flex; flex-direction: column; gap: 4px; margin-top: -4px; }
+.srow { min-height: 52px; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 16px; position: relative; }
+.srow:hover { background: #F8F8F8; }
+.srow .n { width: 24px; text-align: right; color: #737372; font-size: 14px; flex-shrink: 0; }
+.srow .more { margin-left: auto; opacity: 0; color: #737372; border: 0; background: none; }
+.srow:hover .more { opacity: 1; }
+.srow.flash { animation: flash 1.6s ease-out; }
+.sent { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; min-width: 0; color: #1C1C1C; }
+.sent .muted { color: #737372; }
+.bchip { height: 28px; padding: 0 12px; border-radius: 16px; background: #FFF; border: 1px solid; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #1C1C1C; }
+.bchip .ic { display: inline-flex; }
+.bchip .x { color: #737372; border: 0; background: none; padding: 0; font-size: 11px; }
+.bchip.btn { cursor: pointer; } .bchip.btn:hover { background: #F9FAFB; }
+.bchip .ai { color: #737372; font-size: 11px; }
+.k-fetch { border-color: rgba(0,143,136,.35); } .k-fetch .ic { color: #008F88; }
+.k-det { border-color: rgba(166,56,230,.35); } .k-det .ic { color: #A638E6; }
+.k-set { border-color: rgba(240,75,15,.35); } .k-set .ic { color: #F04B0F; }
+.k-route { border-color: rgba(240,75,15,.35); } .k-route .ic { color: #F04B0F; }
+.k-end { border-color: #D0D5DD; } .k-end .ic { color: #475467; }
+.ifpill { display: inline-flex; align-items: center; gap: 4px; background: #D9E4FF; border-radius: 6px; padding: 4px; font-size: 14px; }
+.condtxt { border-bottom: .75px dashed #1C1C1C; padding-bottom: 1px; }
+.arm { position: relative; padding: 8px 0 4px 94px; display: flex; flex-direction: column; gap: 8px; }
+.arm::before { content: ""; position: absolute; left: 79px; top: 4px; bottom: 16px; border-left: 1px dashed #E5E5E5; }
+.arm .ring { position: absolute; left: 75px; top: 0; width: 9px; height: 9px; border-radius: 50%; border: 1px solid #98A2B3; background: #FFF; }
+.child { display: flex; align-items: center; gap: 8px; font-size: 14px; min-height: 36px; flex-wrap: wrap; position: relative; }
+.child .l { color: #737372; width: 22px; }
+.plusround { width: 24px; height: 24px; border-radius: 50%; background: #FFF; border: 1px solid var(--line); box-shadow: 0 1px 3px rgba(16,24,40,.1); display: inline-flex; align-items: center; justify-content: center; margin-left: -27px; font-size: 14px; color: #475467; }
+.bx-prompt { display: flex; gap: 16px; align-items: center; padding: 12px; position: relative; }
+.bx-prompt .n { width: 24px; text-align: right; color: #737372; }
+.bx-prompt button { border: 0; background: none; padding: 0; color: #A1A1AA; font-size: 14px; }
+.bx-prompt .palette { left: 52px; top: 42px; }
+.sent .pick { left: 40px; top: 36px; }
+@media (max-width: 1100px) { .bx-side { display: none; } }
+@media (max-width: 560px) { .bx-content { padding: 16px 16px 260px; } .arm { padding-left: 40px; } .arm::before { left: 25px; } .arm .ring { left: 21px; } }
+
 /* ---------- prototype controls (clearly not product UI) ---------- */
 .ctrl { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 320px; max-width: calc(100vw - 40px); background: #101828; color: #F2F4F7; border-radius: 12px; box-shadow: 0 20px 24px -4px rgba(16,24,40,.25); z-index: 40; font-size: 13px; }
 .ctrl-h { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #344054; }
@@ -259,7 +326,8 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
   <nav class="rail" aria-label="Main">
     <span class="logo" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l5 3v6l-5 3-5-3V5z" stroke="#fff" stroke-width="1.8"/></svg></span>
     <button class="rail-btn" title="Analytics" aria-label="Analytics"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 3v7h7"/></svg></button>
-    <button class="rail-btn" id="rail-agents" data-view="builder" title="Agents" aria-label="Agents"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2.5l1.8 4.6 4.7.4-3.6 3.1 1.1 4.7L10 12.8l-4 2.5 1.1-4.7-3.6-3.1 4.7-.4z" stroke-linejoin="round"/></svg></button>
+    <button class="rail-btn" title="Agents" aria-label="Agents"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2.5c.5 3.5 2.3 5.3 5.8 5.8-3.5.5-5.3 2.3-5.8 5.8-.5-3.5-2.3-5.3-5.8-5.8 3.5-.5 5.3-2.3 5.8-5.8z" stroke-linejoin="round"/></svg></button>
+    <button class="rail-btn" id="rail-agents" data-view="builder" title="Back office agents" aria-label="Back office agents"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="4.5" r="1.7"/><circle cx="6" cy="15.5" r="1.7"/><circle cx="14" cy="6.5" r="1.7"/><path d="M6 6.2v7.6M14 8.2c0 3-3.5 3-7 5.5"/></svg></button>
     <button class="rail-btn" id="rail-cases" data-view="case" title="Cases" aria-label="Cases"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 2.5h7l3.5 3.5v11.5H5z" stroke-linejoin="round"/><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h5"/></svg></button>
     <button class="rail-btn" title="Knowledge" aria-label="Knowledge"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2 2 2 12 0 14M10 3c-2 2-2 12 0 14"/></svg></button>
     <button class="rail-btn" title="Settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h14M3 14h14"/><circle cx="7" cy="6" r="1.8" fill="#fff"/><circle cx="13" cy="14" r="1.8" fill="#fff"/></svg></button>
@@ -267,10 +335,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     <span class="spacer"></span>
     <span class="adam" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 1l1.6 5.4L15 8l-5.4 1.6L8 15l-1.6-5.4L1 8l5.4-1.6z" fill="#F04B0F"/></svg></span>
   </nav>
-  <main class="panel">
-    <header class="panel-top"><span class="t" id="top-title">Claims</span><span class="proto-tag">Prototype: concept validation only, not final design</span></header>
-    <div class="panel-body" id="view"></div>
-  </main>
+  <div class="stage" id="view"></div>
 </div>
 <div id="ctrl"></div>
 <div id="layer"></div>
@@ -313,15 +378,17 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     flashId: null,
     seq: {
       agent: [
-        { id: 'a1', type: 'determine', variable: 'claim_stage', options: 'Action required, Pending, Settled' },
-        { id: 'a2', type: 'setStatus', value: { kind: 'determine', variable: 'claim_stage' } }
+        { id: 'a0', type: 'fetch', text: 'Policy details' },
+        { id: 'a1', type: 'determine', label: 'Claim stage', variable: 'claim_stage', options: 'Action required · Pending · Settled' },
+        { id: 'a2', type: 'setStatus', value: { kind: 'determine', variable: 'claim_stage' } },
+        { id: 'a3', type: 'end' }
       ],
       manager: [
-        { id: 'm1', type: 'determine', variable: 'injury_level', options: 'Critical, High, Medium, Low' },
+        { id: 'm1', type: 'determine', label: 'Injury level', variable: 'injury_level', options: 'Critical · High · Medium · Low' },
         { id: 'm2', type: 'setSeverity', variable: 'injury_level' },
         { id: 'm3', type: 'if', text: 'The document is a police report' },
-        { id: 'm4', type: 'setStatus', child: true, cond: 'police', value: { kind: 'level', key: 'require_action' } },
-        { id: 'm5', type: 'route', text: AGENT }
+        { id: 'm4', type: 'setStatus', parent: 'm3', cond: 'police', value: { kind: 'level', key: 'require_action' } },
+        { id: 'm5', type: 'route', text: 'Best match', note: AGENT + ' · Coverage check · Payment prep' }
       ]
     },
     c: {
@@ -361,50 +428,61 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
   function now() { var h = Math.floor(S.c.min / 60), m = S.c.min % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
   function tick(m) { S.c.min += m; if (S.c.min >= 18 * 60) { S.c.day = Math.min(S.c.day + 1, 4); S.c.min = 9 * 60 + (S.c.min - 18 * 60) % 60; } }
 
-  // ============ BUILDER ============
-  function chip(cls, icon, text, act, id) {
-    return '<span class="achip ' + cls + (act ? ' btn' : '') + '"' + (act ? ' role="button" tabindex="0" data-act="' + act + '" data-id="' + id + '"' : '') + '><span class="ic">' + icon + '</span>' + text + '<span class="rm" data-act="del" data-id="' + id + '" aria-label="Remove">✕</span></span>';
+  // ============ BUILDER (back-office agent page, as in the Back Office prototype and Pages/Agents/Cases) ============
+  var BICON = {
+    stack: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 6l5.5 3 5.5-3L8 3zM2.5 9l5.5 3 5.5-3"/></svg>',
+    end: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5"/><rect x="6" y="6" width="4" height="4" rx=".6"/></svg>',
+    route: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 5.5h10M10 3l2.5 2.5L10 8M13.5 10.5h-10M6 8l-2.5 2.5L6 13"/></svg>',
+    chev: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>',
+    chevR: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4l4 4-4 4"/></svg>',
+    cloud: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4.5 12.5a3 3 0 0 1-.3-6A4 4 0 0 1 12 7a2.7 2.7 0 0 1-.3 5.5z"/></svg>',
+    search: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>',
+    chat: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11.5 2 14l3-1A6 6 0 1 0 3 11.5z"/></svg>',
+    rocket: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 2.5c2 0 4 2 4 4L9 11 5 7zM5 7l-2 .5 1.5-2h2.5M9 11l-.5 2 2-1.5V9"/></svg>'
+  };
+  function bchip(kind, icon, text, opts) {
+    opts = opts || {};
+    return '<span class="bchip ' + kind + (opts.act ? ' btn' : '') + '"' + (opts.act ? ' role="button" tabindex="0" data-act="' + opts.act + '" data-id="' + opts.id + '"' : '') + '><span class="ic">' + icon + '</span>' + text + (opts.ai ? ' <span class="ai">✦ AI</span>' : '') + (opts.id ? '<button class="x" data-act="del" data-id="' + opts.id + '" aria-label="Remove">✕</button>' : '<span class="x">✕</span>') + '</span>';
   }
   function setStatusText(v) {
-    if (!v) return 'Choose a status';
-    return v.kind === 'level' ? LABEL[v.key] : 'from ' + v.variable;
+    if (!v) return 'Status · choose';
+    return 'Status · ' + (v.kind === 'level' ? LABEL[v.key] : 'from ' + v.variable);
   }
-  function stepHtml(st, i, seq) {
-    var body;
-    if (st.type === 'determine') body = 'Determine ' + chip('c-determine', ICON.target, st.variable, null, st.id) + ' from the new documents <span class="who">· options: ' + esc(st.options) + '</span>';
-    else if (st.type === 'setSeverity') body = 'Set severity ' + chip('c-field', ICON.gauge, 'from ' + st.variable, null, st.id);
-    else if (st.type === 'if') body = '<span class="if-badge">' + ICON.branch + 'If</span><span class="dotted">' + esc(st.text) + '</span>';
-    else if (st.type === 'route') body = 'Route to agent ' + chip('c-route', ICON.signpost, esc(st.text), null, st.id);
-    else body = 'Set status ' + chip('c-field', ICON.flag, setStatusText(st.value), 'pick', st.id) + (S.flashId === st.id ? ' <span class="new-mark">NEW</span>' : '') + (S.pickFor === st.id ? pickHtml(st, seq) : '');
-    var n = st.child ? '3.1' : String(seqNumber(seq, i));
-    return '<div class="step' + (st.child ? ' child' : '') + (S.flashId === st.id ? ' flash' : '') + '"><span class="n">' + n + '.</span><div style="position:relative">' + body + '</div><button class="x" data-act="del" data-id="' + st.id + '" aria-label="Delete step">✕</button></div>';
+  function setStatusSentence(st, seq) {
+    return 'Set ' + bchip('k-set', ICON.flag, setStatusText(st.value), { act: 'pick', id: st.id }) + (S.flashId === st.id ? '<span class="new-mark">NEW</span>' : '') + (S.pickFor === st.id ? pickHtml(st, seq) : '');
   }
-  function seqNumber(seq, i) { var n = 0; for (var k = 0; k <= i; k++) if (!seq[k].child) n++; return n; }
-
+  function sentence(st, seq) {
+    if (st.type === 'fetch') return 'Fetch ' + bchip('k-fetch', BICON.stack, esc(st.text));
+    if (st.type === 'determine') return 'Determine ' + bchip('k-det', ICON.target, esc(st.label), { ai: true }) + '<span class="muted">' + esc(st.options) + '</span>';
+    if (st.type === 'setSeverity') return 'Set ' + bchip('k-set', ICON.gauge, 'Severity · from ' + st.variable);
+    if (st.type === 'setStatus') return setStatusSentence(st, seq);
+    if (st.type === 'route') return 'route to ' + bchip('k-route', BICON.route, esc(st.text)) + (st.note ? '<span class="muted">' + esc(st.note) + '</span>' : '');
+    if (st.type === 'end') return bchip('k-end', BICON.end, 'End');
+    return '';
+  }
+  function pickHtml(st, seq) { return '<div class="pick" data-stop>' + statusChoices(seq, st.id) + '</div>'; }
   function statusChoices(seq, forStep) {
     var dets = seq.filter(function (s) { return s.type === 'determine'; });
     var h = '<div class="pal-grp">Set the status to</div>';
     SETTABLE.forEach(function (k) { h += '<button class="pal-it" data-act="choose" data-for="' + forStep + '" data-kind="level" data-val="' + k + '">' + tag(k) + '</button>'; });
     h += '<div class="pick-sep"></div><div class="pal-grp">The answer of a Determine</div>';
-    if (dets.length) dets.forEach(function (d) { h += '<button class="pal-it" data-act="choose" data-for="' + forStep + '" data-kind="determine" data-val="' + d.variable + '"><span class="ic" style="color:var(--fuchsia)">' + ICON.target + '</span><span class="grow">from ' + d.variable + '</span></button>'; });
+    if (dets.length) dets.forEach(function (d) { h += '<button class="pal-it" data-act="choose" data-for="' + forStep + '" data-kind="determine" data-val="' + d.variable + '"><span class="ic" style="color:var(--fuchsia)">' + ICON.target + '</span><span class="grow">' + esc(d.label) + ' <span class="who">(' + d.variable + ')</span></span></button>'; });
     else h += '<div class="pick-note">No Determine before this step</div>';
     h += '<div class="pick-note">New and Processing are set by Notch, so they are not offered.</div>';
     return h;
   }
-  function pickHtml(st, seq) { return '<div class="pick" style="left:60px;top:34px" data-stop>' + statusChoices(seq, st.id) + '</div>'; }
-
   var MENU = {
     agent: [
       ['Logic', [['If / Else', ICON.branch], ['Add a group', '']]],
-      ['Data operations', [['Determine', ICON.target], ['Fetch Data', ''], ['Web search', ''], ['Look up', '']]],
+      ['Data operations', [['Determine', ICON.target], ['Fetch Data', BICON.stack], ['Web search', ''], ['Look up', '']]],
       ['Case', [['Set severity', ICON.gauge], ['Set status', ICON.flag]]],
-      ['Actions', [['Run task', ''], ['Run workflow', ''], ['Run next step', ''], ['End', '']]]
+      ['Actions', [['Run task', ''], ['Run workflow', ''], ['Run next step', ''], ['End', BICON.end]]]
     ],
     manager: [
       ['Logic', [['If / Else', ICON.branch], ['Add a group', '']]],
-      ['Data operations', [['Determine', ICON.target], ['Fetch Data', ''], ['Data conditions', ''], ['Text conditions', '']]],
+      ['Data operations', [['Determine', ICON.target], ['Fetch Data', BICON.stack], ['Data conditions', ''], ['Text conditions', '']]],
       ['Case', [['Set severity', ICON.gauge], ['Set status', ICON.flag]]],
-      ['Routing', [['Route to agent', ICON.signpost], ['Route to step', ''], ['End', '']]]
+      ['Routing', [['Route to agent', BICON.route], ['Route to step', ''], ['End', BICON.end]]]
     ]
   };
   function paletteHtml(seq) {
@@ -422,21 +500,58 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     }
     return h + '</div>';
   }
+  function topNumber(seq, i) { var n = 0; for (var k = 0; k <= i; k++) if (!seq[k].parent) n++; return n; }
+
+  function behaviorRows(seq) {
+    var h = '<div class="bx-seq">';
+    seq.forEach(function (st, i) {
+      if (st.parent) return;
+      var n = topNumber(seq, i);
+      if (st.type === 'if') {
+        h += '<div class="srow"><span class="n">' + n + '.</span><div class="sent"><span class="ifpill">' + ICON.branch + 'If</span><span class="condtxt">' + esc(st.text) + '</span></div></div>';
+        var kids = seq.filter(function (k) { return k.parent === st.id; });
+        h += '<div class="arm"><span class="ring"></span>';
+        kids.forEach(function (k, j) {
+          h += '<div class="child' + (S.flashId === k.id ? ' flash' : '') + '"><span class="l">' + 'abcdefg'[j] + '.</span><div class="sent">' + sentence(k, seq) + '</div></div>';
+        });
+        h += '<div class="child"><span class="plusround">+</span></div></div>';
+        return;
+      }
+      h += '<div class="srow' + (S.flashId === st.id ? ' flash' : '') + '"><span class="n">' + n + '.</span><div class="sent">' + sentence(st, seq) + '</div><button class="more" data-act="del" data-id="' + st.id + '" aria-label="Delete step">⋮</button></div>';
+    });
+    var next = seq.filter(function (s) { return !s.parent; }).length + 1;
+    h += '<div class="bx-prompt"><span class="n">' + next + '.</span><button data-act="slash" aria-haspopup="true">' + (S.surface === 'manager' ? 'Type \'/\' to add a routing step' : 'Write instructions, or type \'/\' for tools') + '</button>' + (S.palette ? paletteHtml(seq) : '') + '</div>';
+    return h + '</div>';
+  }
+
+  function collapsed(title, sub, extra) {
+    return '<section class="bx-card bx-collapsed"><div class="bx-card-h"><div><h3>' + title + (extra || '') + '</h3><p>' + sub + '</p></div><span class="chev">' + BICON.chevR + '</span></div></section>';
+  }
 
   function renderBuilder() {
-    var seq = S.seq[S.surface];
-    var mgr = S.surface === 'manager';
-    document.getElementById('top-title').textContent = mgr ? 'Cases configuration' : 'Agents';
-    var h = '<div class="builder"><div class="agent-h"><h1>' + (mgr ? 'Case manager' : AGENT) + '</h1><span class="sub">' + (mgr ? 'Routes every new case and its documents' : 'Back-office agent · Claims') + '</span></div>';
-    h += '<section class="behavior"><div class="behavior-h"><div><div class="t">' + (mgr ? 'Case manager behavior' : 'Agent behavior') + '</div><div class="s">Build your sequence, step by step, or add a JSON to import one</div></div><span class="who">⋮</span></div><div class="steps">';
-    seq.forEach(function (st, i) { h += stepHtml(st, i, seq); });
-    var next = seqNumber(seq, seq.length - 1) + 1;
-    h += '<div class="prompt-line"><span class="n">' + next + '.</span><button data-act="slash" aria-haspopup="true">Write instructions, or type \'/\' for tools</button>' + (S.palette ? paletteHtml(seq) : '') + '</div>';
-    h += '</div></section>';
-    h += '<div class="why"><div class="card"><b>Set status</b>Sets the case to Action required, Pending or Settled. A fixed status, or the answer of a Determine.</div>' +
-      '<div class="card"><b>When it can\'t apply</b>An answer that is not a status fails the step in Run history. Same status as now: nothing is recorded.</div>' +
-      '<div class="card"><b>After the run</b>A status set by a step is kept. With no step, the run keeps today\'s rule: open next steps → Action required, otherwise Pending.</div></div>';
-    view.innerHTML = h + '</div>';
+    var seq = S.seq[S.surface], mgr = S.surface === 'manager';
+    var name = mgr ? 'Case Manager' : AGENT;
+    var h = '<aside class="bx-side"><div class="bx-side-h"><h2>Back office agents</h2><span style="font-size:20px;color:#1C1C1C">+</span></div>' +
+      '<div class="bx-search">' + BICON.search + 'Search...</div><div class="bx-list">' +
+      '<button data-act="surface" data-val="manager" class="' + (mgr ? 'on' : '') + '">Case Manager</button>' +
+      '<button data-act="surface" data-val="agent" class="' + (!mgr ? 'on' : '') + '"><span class="adot"></span>' + AGENT + '</button>' +
+      ['Coverage check|p', 'Payment prep|g', 'Policy validation|', 'Reserve estimator|g', 'Medical review|p', 'Subrogation check|', 'Customer outreach|g'].map(function (x) { var a = x.split('|'); return '<button data-act="noop"><span class="adot ' + a[1] + '"></span>' + a[0] + '</button>'; }).join('') +
+      '</div></aside>';
+    h += '<main class="bx-main"><header class="bx-top"><div class="bx-crumb"><span>' + name + '</span><span class="who">›</span><b>Claims v42</b><span class="bx-draft">Draft</span><span class="who">⋮</span><span class="bx-saved">' + BICON.cloud + 'Changes saved</span></div>' +
+      '<div class="bx-acts"><span class="proto-tag">Prototype: concept validation only</span><button class="bx-pub">' + BICON.rocket + 'Publish</button><span>' + ICON.sparkle + '</span></div></header><div class="bx-content">';
+    if (mgr) {
+      h += '<section class="bx-card bx-head"><h1>Case Manager</h1><span class="desc">Routes every new case and new document to the agents that handle it.</span></section>';
+      h += collapsed('Triggers', 'What opens or updates a case: integrations, uploads and schedules');
+      h += collapsed('Data extraction groups', 'Fields the case manager reads to decide where a case goes', ' <span class="count">6</span>');
+      h += '<section class="bx-card"><div class="bx-card-h"><div><h3>Case manager behavior</h3><p>Decide where each case goes, step by step</p></div><span class="chev">⋮ ' + BICON.chev + '</span></div>' + behaviorRows(seq) + '</section>';
+    } else {
+      h += '<section class="bx-card bx-head"><h1>' + AGENT + '</h1><span class="bx-mode">' + BICON.chat + 'Task Mode ' + ICON.caret + '</span><span class="desc">Reads every new claim document, works out where the claim stands and sets the case status.</span></section>';
+      h += collapsed('Agent trigger', 'What starts this agent. Triggers that read from an integration show its icon');
+      h += collapsed('When it applies', 'Once started, the conditions the case must meet for this agent to run');
+      h += collapsed('Data extraction groups', 'Groups of fields to extract. Each group has conditions for when to extract it', ' <span class="count">8</span>');
+      h += '<section class="bx-card"><div class="bx-card-h"><div><h3>Agent behavior</h3><p>Build your flow step by step, or add JSON to import one</p></div><span class="chev">⇕ ⋮ ' + BICON.chev + '</span></div>' + behaviorRows(seq) + '</section>';
+    }
+    view.innerHTML = h + '</div></main>';
   }
 
   // ============ CASE ============
@@ -506,9 +621,8 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
   }
 
   function renderCase() {
-    document.getElementById('top-title').textContent = 'Claims';
     var c = S.c;
-    var h = '<aside class="cases"><div class="cases-h"><span class="ttl">Cases <span class="count">300</span></span><span class="icons">⌕ ⇅ ≡</span></div>' +
+    var h = '<main class="panel"><header class="panel-top"><span class="t">Claims</span><span class="proto-tag">Prototype: concept validation only, not final design</span></header><div class="panel-body"><aside class="cases"><div class="cases-h"><span class="ttl">Cases <span class="count">300</span></span><span class="icons">⌕ ⇅ ≡</span></div>' +
       '<div class="overview">▦ Overview</div><div class="case-items">';
     h += '<button class="case-item active"><div class="ci-row"><span class="ci-name">CLM-2026-0978</span><span class="ci-time">' + (c.processing ? 'just now' : 'now') + '</span></div><div class="ci-sub">' + listTag(c.processing ? 'processing' : c.status) + '</div></button>';
     S.others.forEach(function (o, i) {
@@ -527,7 +641,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
       h += '<div class="card summary"><div class="h">' + ICON.sparkle + ' ADAM Summary</div><p>Rear-end collision on Mar 8. Claimant reports neck strain, police report confirms the insured was at fault. Medical bills are arriving; liability is clear, the open question is the treatment total…<u>Read more</u></p></div>';
       h += '<div class="card tl-card">' + timeline() + '</div>';
     }
-    h += '</section>';
+    h += '</section></div></main>';
     view.innerHTML = h;
   }
 
@@ -537,7 +651,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     h += '<div class="seg2"><button data-act="go" data-val="builder" aria-pressed="' + (S.view === 'builder') + '">Sequence builder</button><button data-act="go" data-val="case" aria-pressed="' + (S.view === 'case') + '">Case page</button></div>';
     if (S.view === 'builder') {
       h += '<div><label>Sequence</label><div class="seg2"><button data-act="surface" data-val="agent" aria-pressed="' + (S.surface === 'agent') + '">Back-office agent</button><button data-act="surface" data-val="manager" aria-pressed="' + (S.surface === 'manager') + '">Case manager</button></div></div>';
-      h += '<div class="hint">Type “/” in the last line, or click a Set status chip to change its value.</div>';
+      h += '<div class="hint">Pick Case Manager or Claims intake agent in the left list. Type “/” in the last line, or click a Set status chip to change its value.</div>';
     } else {
       h += '<div><label for="sd">A new document arrives</label><select id="sd" data-key="doc">' + ['Medical bill', 'Police report', 'Settlement letter', 'Customer email'].map(function (d) { return '<option' + (S.sim.doc === d ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select></div>';
       h += '<div><label for="sa">Determine claim_stage answers</label><select id="sa" data-key="answer">' + ['Action required', 'Pending', 'Settled', 'Waiting on lawyer'].map(function (d) { return '<option value="' + d + '"' + (S.sim.answer === d ? ' selected' : '') + '>' + d + (d === 'Waiting on lawyer' ? ' (not a status)' : '') + '</option>'; }).join('') + '</select></div>';
@@ -560,7 +674,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     var decided = false;
     seq.forEach(function (st, i) {
       if (st.type !== 'setStatus') return;
-      var n = st.child ? '3.1' : seqNumber(seq, i);
+      var n = st.parent ? topNumber(seq, seq.findIndex(function (k) { return k.id === st.parent; })) + '.a' : topNumber(seq, i);
       if (st.cond === 'police' && S.sim.doc !== 'Police report') { log.push({ o: 'skip', t: who + ' · step ' + n + ' Set status: skipped, the document is not a police report' }); return; }
       if (!st.value) { log.push({ o: 'fail', t: who + ' · step ' + n + ' Set status: no status chosen' }); return; }
       var target, desc;
@@ -629,6 +743,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
     var a = t.getAttribute('data-act'), v = t.getAttribute('data-val'), id = t.getAttribute('data-id');
     switch (a) {
       case 'go': S.view = v; closeFloating(); render(); break;
+      case 'noop': toast('This prototype opens only the Case Manager and the ' + AGENT + ''); break;
       case 'surface': S.surface = v; closeFloating(); S.flashId = null; render(); break;
       case 'ctrl-min': S.ctrlMin = !S.ctrlMin; renderCtrl(); break;
       case 'slash': S.pickFor = null; S.palette = S.palette ? null : { stage: 'root' }; render(); break;
@@ -638,7 +753,7 @@ textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); borde
       case 'choose':
         var val = t.getAttribute('data-kind') === 'level' ? { kind: 'level', key: v } : { kind: 'determine', variable: v };
         var f = t.getAttribute('data-for');
-        if (f === 'new') { var nid = 'n' + Date.now(); S.seq[S.surface].push({ id: nid, type: 'setStatus', value: val }); S.flashId = nid; S.palette = null; }
+        if (f === 'new') { var nid = 'n' + Date.now(); var arr = S.seq[S.surface]; var endAt = arr.length && /^(end|route)$/.test(arr[arr.length - 1].type) ? arr.length - 1 : arr.length; arr.splice(endAt, 0, { id: nid, type: 'setStatus', value: val }); S.flashId = nid; S.palette = null; }
         else { step(f).value = val; S.pickFor = null; }
         render(); break;
       case 'del': ev.stopPropagation(); S.seq[S.surface] = S.seq[S.surface].filter(function (s) { return s.id !== id; }); S.pickFor = null; render(); break;
