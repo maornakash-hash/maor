@@ -1,0 +1,676 @@
+<title>Set Status Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: the Notch app shell from the Cases Figma (9666:30734, 9642:162827): 48px icon rail, white rounded app panel,
+   case list + case page; Agents → "Agent behavior" card (Agents Figma 12720:539896). Colors are the repo's figmaPrimitives.
+   Single light look on purpose: it mirrors the product, which ships light. */
+:root {
+  color-scheme: light;
+  --shell: #F2F4F7;            /* gray.100 */
+  --panel: #FFFFFF;
+  --line: #EAECF0;             /* gray.200 */
+  --line-2: #E4E7EC;           /* gray.250 */
+  --line-3: #D0D5DD;           /* gray.300 */
+  --fg: #1D2939;               /* gray.800 */
+  --fg-2: #475467;             /* gray.600 */
+  --fg-3: #667085;             /* gray.500 */
+  --fg-4: #98A2B3;             /* gray.400 */
+  --hover: #F9FAFB;            /* gray.50 */
+  --brand: #F04B0F;            /* brand.500 */
+  --brand-tint: #FFF8F0;       /* brand.100 */
+  --blue-fg: #1570EF; --blue-bg: #EFF4FF; --blue-line: #C8D8FF;
+  --err-fg: #E7000B; --err-bg: #FFE2E2;
+  --warn-fg: #C44C21; --warn-bg: #FEFAEA; --warn-line: #FFF0D1;
+  --ok-fg: #039855; --ok-bg: #E5F7EF;
+  --fuchsia: #A638E6; --fuchsia-line: #D9B0FB;
+  --mint: #008F88; --mint-line: #A8DCD9;
+  --purple: #8068F0;
+  --group-bg: #F9F8F6; --group-rule: #E1D5C8;
+  --dot-doc: #5B6F94; --dot-email: #C08A5B; --dot-call: #5E9E86; --dot-action: #7A6AA8;
+  --shadow: 0 4px 6px -2px rgba(16,24,40,.05), 0 12px 16px -4px rgba(16,24,40,.10);
+  --font: 'Inter', 'Rubik', Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--shell); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, select, textarea, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue-fg); outline-offset: 2px; }
+svg { flex-shrink: 0; }
+
+.app { display: flex; height: 100%; padding-block: 8px; padding-right: max(8px, env(safe-area-inset-right, 0px)); padding-left: env(safe-area-inset-left, 0px); }
+.rail { width: 48px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 8px; }
+.rail .logo { width: 26px; height: 26px; border-radius: 50%; background: #12B5A6; display: grid; place-items: center; margin-bottom: 14px; }
+.rail-btn { width: 32px; height: 32px; border-radius: 8px; border: 0; background: none; color: var(--fg-2); display: grid; place-items: center; }
+.rail-btn:hover { background: var(--line); }
+.rail-btn.active { background: #FFFFFF; box-shadow: 0 1px 2px rgba(16,24,40,.06); color: var(--fg); }
+.rail .spacer { flex: 1; }
+.rail .adam { width: 24px; height: 24px; border-radius: 6px; background: #1D2939; display: grid; place-items: center; margin-bottom: 8px; }
+
+.panel { flex: 1; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-top { height: 58px; flex-shrink: 0; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-inline: 20px; }
+.panel-top .t { font-size: 14px; font-weight: 500; }
+.proto-tag { font-size: 11px; font-weight: 500; color: var(--warn-fg); background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 9999px; padding: 2px 10px; white-space: nowrap; }
+.panel-body { flex: 1; min-height: 0; display: flex; }
+
+/* ---------- chips ---------- */
+.tag { display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px; padding: 2px 8px; font-size: 12px; font-weight: 500; white-space: nowrap; line-height: 18px; }
+.t-require_action, .t-sev-high { color: var(--err-fg); background: var(--err-bg); }
+.t-pending, .t-sev-medium { color: var(--warn-fg); background: var(--warn-bg); }
+.t-sev-medium { background: #FFF0D1; }
+.t-closed, .t-sev-low { color: var(--ok-fg); background: var(--ok-bg); }
+.t-new, .t-processing { color: var(--blue-fg); background: var(--blue-bg); }
+.t-none { color: var(--fg-2); background: var(--shell); }
+.spin { width: 10px; height: 10px; border-radius: 50%; border: 1.6px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+.list-tag { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); border-radius: 9999px; padding: 1px 8px 1px 7px; font-size: 12px; color: var(--fg); }
+.list-tag i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.pill-btn { border: 0; background: none; padding: 0; border-radius: 9999px; display: inline-flex; }
+.pill-btn .tag { padding-right: 6px; }
+.pill-btn:disabled { cursor: default; }
+.pill-btn:not(:disabled):hover .tag { filter: brightness(.97); }
+.new-mark { font-size: 10px; font-weight: 600; color: var(--brand); background: var(--brand-tint); border-radius: 4px; padding: 0 5px; letter-spacing: .02em; }
+
+/* ---------- case list ---------- */
+.cases { width: 320px; flex-shrink: 0; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.cases-h { height: 50px; display: flex; align-items: center; justify-content: space-between; padding-inline: 20px; border-bottom: 1px solid var(--line); }
+.cases-h .ttl { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; }
+.count { font-size: 12px; background: var(--shell); border-radius: 6px; padding: 1px 7px; color: var(--fg-2); }
+.icons { display: flex; gap: 14px; color: var(--fg-2); }
+.overview { margin: 12px 12px 6px; display: flex; align-items: center; gap: 10px; background: var(--shell); border-radius: 8px; padding: 8px 12px; font-size: 15px; }
+.case-items { overflow-y: auto; border-top: 1px solid var(--line); margin-top: 6px; }
+.case-item { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 12px 20px; border-left: 2px solid transparent; }
+.case-item:hover { background: var(--hover); }
+.case-item.active { background: var(--hover); border-left-color: var(--brand); }
+.ci-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ci-name { font-size: 14px; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ci-time { font-size: 12px; color: var(--fg-3); white-space: nowrap; }
+.ci-sub { margin-top: 6px; }
+
+/* ---------- case page ---------- */
+.case { flex: 1; min-width: 0; overflow-y: auto; padding: 28px 30px 120px; display: flex; flex-direction: column; gap: 14px; }
+.case-title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.case-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.case-title h1 { font-size: 24px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+.case-meta { display: flex; align-items: center; gap: 12px; color: var(--fg-2); font-size: 13px; }
+.round-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: #FFF; display: grid; place-items: center; color: var(--fg-2); }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); background: #FFF; border-radius: 9999px; padding: 5px 12px; font-size: 14px; color: var(--fg); }
+.tab.active { background: var(--shell); border-color: var(--line-3); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { border: 1px solid var(--line-2); border-radius: 8px; padding: 12px 14px; }
+.kpi .l { font-size: 12px; color: var(--fg-3); }
+.kpi .v { font-size: 16px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.card { border: 1px solid var(--line-2); border-radius: 10px; background: #FFF; }
+.summary { padding: 14px 16px; }
+.summary .h { display: flex; align-items: center; gap: 8px; color: var(--fg-2); font-size: 14px; margin-bottom: 6px; }
+.summary p { margin: 0; font-size: 14px; line-height: 1.55; }
+
+/* timeline */
+.tl-card { padding: 18px 16px 14px; position: relative; }
+.tl-scroll { overflow-x: auto; }
+.tl { position: relative; min-width: 640px; height: 170px; }
+.tl-col { position: absolute; top: 0; bottom: 34px; border-left: 1px dashed var(--line-3); }
+.tl-col span { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--fg-3); white-space: nowrap; background: #FFF; padding-inline: 4px; }
+.tl-axis { position: absolute; left: 0; right: 0; top: 96px; height: 1px; background: var(--line-3); }
+.tl-dot { position: absolute; top: 89px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #FFF; box-shadow: 0 0 0 1px rgba(16,24,40,.08); padding: 0; transform: translateX(-50%); }
+.tl-dot.sel { box-shadow: 0 0 0 2px var(--fg); }
+.tl-dot.status { background: var(--fg); }
+.tl-flag { position: absolute; top: 58px; transform: translateX(-50%); padding: 0; border: 0; background: none; }
+.tl-flag .tag { font-size: 11px; padding: 1px 7px; }
+.legend { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--fg-2); }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.tip { position: absolute; z-index: 15; width: 330px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.tip-h { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.tip-h b { font-weight: 500; }
+.badge-n { font-size: 11px; color: var(--fg-2); background: var(--shell); border-radius: 6px; padding: 1px 6px; }
+.tip-sec { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 8px; }
+.tip-sec .k { font-size: 11px; color: var(--fg-3); }
+.tip-row { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 8px; font-size: 13px; align-items: start; }
+.tip-row .tm { color: var(--fg-3); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.chg { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.who { font-size: 12px; color: var(--fg-3); }
+.arrow { color: var(--fg-2); }
+
+/* status / severity menu (mirrors Figma 9642:162827 and 9658:170173) */
+.anchor { position: relative; display: inline-flex; }
+.menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; width: 296px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 8px; }
+.seg { display: flex; background: var(--shell); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; border: 0; background: none; border-radius: 6px; padding: 5px 8px; font-size: 14px; color: var(--fg-2); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.seg button[aria-pressed="true"] { background: #FFF; color: var(--fg); box-shadow: 0 1px 2px rgba(16,24,40,.08); }
+.opts { display: flex; flex-direction: column; padding-top: 6px; }
+.opt { display: flex; align-items: center; justify-content: space-between; border: 0; background: none; border-radius: 6px; padding: 8px; }
+.opt:hover { background: var(--hover); }
+.opt .ck { color: var(--brand); }
+.menu-foot { border-top: 1px solid var(--line); margin-top: 4px; padding: 10px 8px 4px; font-size: 12px; color: var(--fg-3); }
+.acts { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; max-height: 330px; overflow-y: auto; }
+.act { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.act-h { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.act-h .time { font-size: 12px; color: var(--fg-3); }
+.avatar { width: 18px; height: 18px; border-radius: 50%; background: #8A6A55; display: inline-grid; place-items: center; color: #FFF; font-size: 9px; font-weight: 600; }
+.avatar.bot { background: var(--fuchsia); }
+.avatar.sys { background: var(--fg-4); }
+.act-what { font-size: 14px; }
+.act .reason { font-size: 12px; color: var(--fg-2); font-style: italic; }
+
+/* run history list */
+.runs { padding: 4px 16px; }
+.run-row { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; align-items: baseline; }
+.run-row:last-child { border-bottom: 0; }
+.out { font-size: 11px; font-weight: 500; border-radius: 9999px; padding: 1px 8px; text-align: center; }
+.o-ok { color: var(--ok-fg); background: var(--ok-bg); }
+.o-kept { color: var(--fg-2); background: var(--shell); }
+.o-fail { color: var(--err-fg); background: var(--err-bg); }
+.o-run { color: var(--blue-fg); background: var(--blue-bg); }
+.o-skip { color: var(--fg-3); background: #FFF; border: 1px solid var(--line-2); }
+
+/* ---------- builder ---------- */
+.builder { flex: 1; min-width: 0; overflow-y: auto; padding: 24px 30px 140px; display: flex; flex-direction: column; gap: 16px; }
+.agent-h { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.agent-h h1 { font-size: 20px; font-weight: 600; margin: 0; }
+.agent-h .sub { color: var(--fg-3); font-size: 13px; }
+.behavior { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px 10px; max-width: 1000px; }
+.behavior-h { display: flex; justify-content: space-between; align-items: flex-start; }
+.behavior-h .t { font-size: 15px; font-weight: 500; }
+.behavior-h .s { font-size: 13px; color: var(--fg-3); }
+.steps { margin-top: 14px; display: flex; flex-direction: column; }
+.step { display: grid; grid-template-columns: 32px minmax(0,1fr) auto; gap: 6px; padding: 9px 8px; border-radius: 8px; align-items: start; font-size: 15px; line-height: 30px; }
+.step:hover { background: var(--hover); }
+.step .n { color: var(--fg-3); font-size: 14px; text-align: right; padding-right: 6px; }
+.step.child { margin-left: 32px; }
+.step .x { opacity: 0; border: 0; background: none; color: var(--fg-3); border-radius: 6px; line-height: 1; padding: 6px; }
+.step:hover .x { opacity: 1; }
+.step.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { from { background: var(--brand-tint); } to { background: transparent; } }
+.dotted { border-bottom: 1.5px dotted var(--fg-3); padding-bottom: 1px; }
+.if-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--blue-bg); color: var(--blue-fg); border-radius: 6px; padding: 0 7px; font-size: 13px; font-weight: 500; line-height: 24px; margin-right: 6px; }
+.achip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--chip-line, var(--line-3)); border-radius: 9999px; padding: 0 10px 0 9px; height: 28px; font-size: 13px; background: #FFF; vertical-align: middle; margin-inline: 3px; line-height: 1; }
+.achip .ic { color: var(--chip-c, var(--fg-2)); display: inline-flex; }
+.achip .rm { color: var(--fg-3); font-size: 13px; margin-left: 2px; }
+.achip.btn { cursor: pointer; }
+.achip.btn:hover { background: var(--hover); }
+.c-determine { --chip-c: var(--fuchsia); --chip-line: var(--fuchsia-line); }
+.c-field { --chip-c: var(--brand); --chip-line: #FDD7B5; }
+.c-route { --chip-c: var(--mint); --chip-line: var(--mint-line); }
+.prompt-line { display: grid; grid-template-columns: 32px minmax(0,1fr); gap: 6px; padding: 9px 8px; color: var(--fg-4); font-size: 15px; position: relative; }
+.prompt-line button { text-align: left; border: 0; background: none; color: var(--fg-4); padding: 0; }
+.prompt-line .n { text-align: right; padding-right: 6px; font-size: 14px; }
+.palette, .pick { color: var(--fg); position: absolute; z-index: 25; width: 300px; max-width: calc(100vw - 32px); background: #FFF; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 6px; max-height: 380px; overflow-y: auto; }
+.palette { left: 46px; top: 40px; }
+.pal-grp { font-size: 12px; color: var(--fg-3); padding: 8px 8px 4px; }
+.pal-it { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; border-radius: 6px; padding: 7px 8px; font-size: 14px; text-align: left; }
+.pal-it:hover, .pal-it.kb { background: var(--hover); }
+.pal-it .ic { width: 20px; display: inline-flex; justify-content: center; }
+.pal-it .grow { flex: 1; }
+.pal-it[aria-disabled="true"] { color: var(--fg-4); cursor: default; }
+.pal-back { font-size: 12px; color: var(--fg-3); border: 0; background: none; padding: 6px 8px; }
+.pick-sep { border-top: 1px solid var(--line); margin: 6px 0; }
+.pick-note { font-size: 12px; color: var(--fg-3); padding: 4px 8px 6px; }
+.why { max-width: 1000px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.why .card { padding: 12px 14px; font-size: 13px; color: var(--fg-2); }
+.why .card b { color: var(--fg); font-weight: 500; display: block; margin-bottom: 4px; }
+
+/* ---------- prototype controls (clearly not product UI) ---------- */
+.ctrl { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 320px; max-width: calc(100vw - 40px); background: #101828; color: #F2F4F7; border-radius: 12px; box-shadow: 0 20px 24px -4px rgba(16,24,40,.25); z-index: 40; font-size: 13px; }
+.ctrl-h { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #344054; }
+.ctrl-h b { font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #FDB022; }
+.ctrl-h button { border: 0; background: none; color: #98A2B3; }
+.ctrl-b { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.ctrl label { font-size: 12px; color: #98A2B3; display: block; margin-bottom: 4px; }
+.ctrl select { width: 100%; background: #1D2939; color: #F2F4F7; border: 1px solid #344054; border-radius: 6px; padding: 6px 8px; }
+.ctrl .chk { display: flex; gap: 8px; align-items: center; color: #D0D5DD; }
+.ctrl .go { background: #F04B0F; color: #FFF; border: 0; border-radius: 8px; padding: 8px; font-weight: 500; }
+.ctrl .go:disabled { opacity: .55; cursor: default; }
+.ctrl .seg2 { display: flex; background: #1D2939; border-radius: 8px; padding: 3px; }
+.ctrl .seg2 button { flex: 1; border: 0; background: none; color: #98A2B3; border-radius: 6px; padding: 5px; font-size: 12px; }
+.ctrl .seg2 button[aria-pressed="true"] { background: #344054; color: #FFF; }
+.ctrl .hint { font-size: 12px; color: #98A2B3; }
+.ctrl.min .ctrl-b { display: none; }
+
+/* modal + toast */
+.overlay { position: fixed; inset: 0; background: rgba(16,24,40,.45); display: grid; place-items: center; z-index: 60; padding: 16px; }
+.modal { width: 440px; max-width: 100%; background: #FFF; border-radius: 12px; box-shadow: var(--shadow); }
+.modal-h { padding: 18px 20px 6px; font-size: 16px; font-weight: 600; }
+.modal-b { padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 12px; color: var(--fg-2); }
+.modal-b .fl label { display: block; font-size: 13px; font-weight: 500; color: var(--fg); margin-bottom: 6px; }
+textarea { width: 100%; min-height: 76px; border: 1px solid var(--line-3); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.modal-f { padding: 12px 20px 16px; display: flex; justify-content: flex-end; gap: 8px; }
+.b { border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 500; border: 1px solid var(--line-3); background: #FFF; }
+.b.primary { background: #1D2939; border-color: #1D2939; color: #FFF; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: #1D2939; color: #FFF; border-radius: 8px; padding: 9px 14px; font-size: 13px; z-index: 70; max-width: calc(100vw - 40px); box-shadow: var(--shadow); }
+
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .why { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 900px) {
+  .cases { display: none; }
+  .case, .builder { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 260px max(16px, env(safe-area-inset-left, 0px)); }
+}
+@media (max-width: 560px) {
+  .rail { width: 40px; }
+  .panel-top { padding-inline: 14px; }
+  .proto-tag { display: none; }
+  .ctrl { right: 12px; left: 12px; width: auto; max-width: none; }
+}
+</style>
+
+<div class="app">
+  <nav class="rail" aria-label="Main">
+    <span class="logo" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l5 3v6l-5 3-5-3V5z" stroke="#fff" stroke-width="1.8"/></svg></span>
+    <button class="rail-btn" title="Analytics" aria-label="Analytics"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 3v7h7"/></svg></button>
+    <button class="rail-btn" id="rail-agents" data-view="builder" title="Agents" aria-label="Agents"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2.5l1.8 4.6 4.7.4-3.6 3.1 1.1 4.7L10 12.8l-4 2.5 1.1-4.7-3.6-3.1 4.7-.4z" stroke-linejoin="round"/></svg></button>
+    <button class="rail-btn" id="rail-cases" data-view="case" title="Cases" aria-label="Cases"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 2.5h7l3.5 3.5v11.5H5z" stroke-linejoin="round"/><path d="M12 2.5V6h3.5M7.5 10h5M7.5 13h5"/></svg></button>
+    <button class="rail-btn" title="Knowledge" aria-label="Knowledge"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2 2 2 12 0 14M10 3c-2 2-2 12 0 14"/></svg></button>
+    <button class="rail-btn" title="Settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h14M3 14h14"/><circle cx="7" cy="6" r="1.8" fill="#fff"/><circle cx="13" cy="14" r="1.8" fill="#fff"/></svg></button>
+    <button class="rail-btn" title="Conversations" aria-label="Conversations"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9a6 6 0 1 1 3 5.2L3 15z" stroke-linejoin="round"/></svg></button>
+    <span class="spacer"></span>
+    <span class="adam" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M8 1l1.6 5.4L15 8l-5.4 1.6L8 15l-1.6-5.4L1 8l5.4-1.6z" fill="#F04B0F"/></svg></span>
+  </nav>
+  <main class="panel">
+    <header class="panel-top"><span class="t" id="top-title">Claims</span><span class="proto-tag">Prototype: concept validation only, not final design</span></header>
+    <div class="panel-body" id="view"></div>
+  </main>
+</div>
+<div id="ctrl"></div>
+<div id="layer"></div>
+
+<script>
+(function () {
+  // Real enum: common/models/src/csr/cases.ts:149. Labels/tones: caseStatusAppearance.ts.
+  var SETTABLE = ['require_action', 'pending', 'closed'];
+  var LABEL = { require_action: 'Action required', pending: 'Pending', closed: 'Settled', new: 'New', processing: 'Processing' };
+  var AGENT = 'Claims intake agent';
+  var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+  var ICON = {
+    target: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".6" fill="currentColor"/></svg>',
+    gauge: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 11.5a5.5 5.5 0 1 1 11 0"/><path d="M8 11.5l2.6-3.4"/></svg>',
+    flag: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3.5 14.5V2.5M3.5 3h8l-1.6 2.7L11.5 8.5h-8" stroke-linejoin="round"/></svg>',
+    signpost: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 14.5V8M8 4V1.5M3 4h9l2 2-2 2H3z" stroke-linejoin="round"/></svg>',
+    branch: '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="3.5" r="1.5"/><circle cx="4" cy="12.5" r="1.5"/><circle cx="12" cy="6" r="1.5"/><path d="M4 5v6M12 7.5c0 2.5-8 1.5-8 3.5"/></svg>',
+    tag: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 2.5h5.5L14 9l-5 5-6.5-6.5z" stroke-linejoin="round"/><circle cx="5.3" cy="5.3" r=".9" fill="currentColor"/></svg>',
+    clock: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2h2"/><path d="M8 5v3l2 1.5"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8.5l3 3 7-7"/></svg>',
+    caret: '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg>',
+    reopen: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v2.5h-2.5"/></svg>',
+    sparkle: '<svg width="13" height="13" viewBox="0 0 16 16"><path d="M8 1l1.6 5.4L15 8l-5.4 1.6L8 15l-1.6-5.4L1 8l5.4-1.6z" fill="#F04B0F"/></svg>'
+  };
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function tag(st, extra) { return '<span class="tag t-' + st + '">' + (st === 'processing' ? '<span class="spin"></span>' : '') + LABEL[st] + (extra || '') + '</span>'; }
+  function matchStatus(a) {
+    a = String(a || '').trim().toLowerCase();
+    for (var i = 0; i < SETTABLE.length; i++) if (SETTABLE[i] === a || LABEL[SETTABLE[i]].toLowerCase() === a) return SETTABLE[i];
+    return null;
+  }
+
+  var S = {
+    view: 'case',
+    surface: 'agent',
+    palette: null,      // null | {stage:'root'|'status'}
+    pickFor: null,      // step id whose Set status chip menu is open
+    flashId: null,
+    seq: {
+      agent: [
+        { id: 'a1', type: 'determine', variable: 'claim_stage', options: 'Action required, Pending, Settled' },
+        { id: 'a2', type: 'setStatus', value: { kind: 'determine', variable: 'claim_stage' } }
+      ],
+      manager: [
+        { id: 'm1', type: 'determine', variable: 'injury_level', options: 'Critical, High, Medium, Low' },
+        { id: 'm2', type: 'setSeverity', variable: 'injury_level' },
+        { id: 'm3', type: 'if', text: 'The document is a police report' },
+        { id: 'm4', type: 'setStatus', child: true, cond: 'police', value: { kind: 'level', key: 'require_action' } },
+        { id: 'm5', type: 'route', text: AGENT }
+      ]
+    },
+    c: {
+      status: 'require_action', processing: false, day: 2, min: 10 * 60,
+      events: [
+        { day: 0, time: '09:00', kind: 'doc', text: 'FNOL form' },
+        { day: 0, time: '09:04', kind: 'status', from: null, to: 'pending', by: 'Notch · run finished', actor: 'sys' },
+        { day: 1, time: '14:10', kind: 'doc', text: 'Police report' },
+        { day: 1, time: '14:13', kind: 'status', from: 'pending', to: 'require_action', by: 'Case manager · step 4', actor: 'bot' },
+        { day: 1, time: '15:40', kind: 'email', text: 'Email from claimant' }
+      ],
+      runlog: [
+        { o: 'ok', t: 'Case manager · Set status (Action required): Pending → Action required' },
+        { o: 'kept', t: AGENT + ' · Set status from claim_stage, answer "Action required": already Action required, nothing recorded' },
+        { o: 'run', t: 'Run finished. A step set the status, so the run keeps it' }
+      ],
+      tab: 'manager',
+      tip: null
+    },
+    menu: null,         // null | 'status' | 'activity' | 'severity'
+    modal: null,
+    toast: null,
+    sim: { doc: 'Medical bill', answer: 'Pending', next: true },
+    ctrlMin: false,
+    others: [
+      { name: 'CLM-2026-0981', time: '20m', label: 'new', note: 'Case manager set Pending before anyone opened it', status: 'pending', visited: false },
+      { name: 'CLM-2026-0975', time: '2h', label: 'updated', status: 'pending', visited: true },
+      { name: 'CLM-2026-0969', time: '1d', status: 'closed', visited: true },
+      { name: 'CLM-2026-0962', time: '2d', label: 'failed', status: 'require_action', visited: true },
+      { name: 'CLM-2026-0958', time: '3d', status: 'pending', visited: true }
+    ]
+  };
+
+  var view = document.getElementById('view'), layer = document.getElementById('layer'), ctrl = document.getElementById('ctrl');
+  var toastT;
+  function toast(m) { S.toast = m; renderLayer(); clearTimeout(toastT); toastT = setTimeout(function () { S.toast = null; renderLayer(); }, 4200); }
+  function now() { var h = Math.floor(S.c.min / 60), m = S.c.min % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function tick(m) { S.c.min += m; if (S.c.min >= 18 * 60) { S.c.day = Math.min(S.c.day + 1, 4); S.c.min = 9 * 60 + (S.c.min - 18 * 60) % 60; } }
+
+  // ============ BUILDER ============
+  function chip(cls, icon, text, act, id) {
+    return '<span class="achip ' + cls + (act ? ' btn' : '') + '"' + (act ? ' role="button" tabindex="0" data-act="' + act + '" data-id="' + id + '"' : '') + '><span class="ic">' + icon + '</span>' + text + '<span class="rm" data-act="del" data-id="' + id + '" aria-label="Remove">✕</span></span>';
+  }
+  function setStatusText(v) {
+    if (!v) return 'Choose a status';
+    return v.kind === 'level' ? LABEL[v.key] : 'from ' + v.variable;
+  }
+  function stepHtml(st, i, seq) {
+    var body;
+    if (st.type === 'determine') body = 'Determine ' + chip('c-determine', ICON.target, st.variable, null, st.id) + ' from the new documents <span class="who">· options: ' + esc(st.options) + '</span>';
+    else if (st.type === 'setSeverity') body = 'Set severity ' + chip('c-field', ICON.gauge, 'from ' + st.variable, null, st.id);
+    else if (st.type === 'if') body = '<span class="if-badge">' + ICON.branch + 'If</span><span class="dotted">' + esc(st.text) + '</span>';
+    else if (st.type === 'route') body = 'Route to agent ' + chip('c-route', ICON.signpost, esc(st.text), null, st.id);
+    else body = 'Set status ' + chip('c-field', ICON.flag, setStatusText(st.value), 'pick', st.id) + (S.flashId === st.id ? ' <span class="new-mark">NEW</span>' : '') + (S.pickFor === st.id ? pickHtml(st, seq) : '');
+    var n = st.child ? '3.1' : String(seqNumber(seq, i));
+    return '<div class="step' + (st.child ? ' child' : '') + (S.flashId === st.id ? ' flash' : '') + '"><span class="n">' + n + '.</span><div style="position:relative">' + body + '</div><button class="x" data-act="del" data-id="' + st.id + '" aria-label="Delete step">✕</button></div>';
+  }
+  function seqNumber(seq, i) { var n = 0; for (var k = 0; k <= i; k++) if (!seq[k].child) n++; return n; }
+
+  function statusChoices(seq, forStep) {
+    var dets = seq.filter(function (s) { return s.type === 'determine'; });
+    var h = '<div class="pal-grp">Set the status to</div>';
+    SETTABLE.forEach(function (k) { h += '<button class="pal-it" data-act="choose" data-for="' + forStep + '" data-kind="level" data-val="' + k + '">' + tag(k) + '</button>'; });
+    h += '<div class="pick-sep"></div><div class="pal-grp">The answer of a Determine</div>';
+    if (dets.length) dets.forEach(function (d) { h += '<button class="pal-it" data-act="choose" data-for="' + forStep + '" data-kind="determine" data-val="' + d.variable + '"><span class="ic" style="color:var(--fuchsia)">' + ICON.target + '</span><span class="grow">from ' + d.variable + '</span></button>'; });
+    else h += '<div class="pick-note">No Determine before this step</div>';
+    h += '<div class="pick-note">New and Processing are set by Notch, so they are not offered.</div>';
+    return h;
+  }
+  function pickHtml(st, seq) { return '<div class="pick" style="left:60px;top:34px" data-stop>' + statusChoices(seq, st.id) + '</div>'; }
+
+  var MENU = {
+    agent: [
+      ['Logic', [['If / Else', ICON.branch], ['Add a group', '']]],
+      ['Data operations', [['Determine', ICON.target], ['Fetch Data', ''], ['Web search', ''], ['Look up', '']]],
+      ['Case', [['Set severity', ICON.gauge], ['Set status', ICON.flag]]],
+      ['Actions', [['Run task', ''], ['Run workflow', ''], ['Run next step', ''], ['End', '']]]
+    ],
+    manager: [
+      ['Logic', [['If / Else', ICON.branch], ['Add a group', '']]],
+      ['Data operations', [['Determine', ICON.target], ['Fetch Data', ''], ['Data conditions', ''], ['Text conditions', '']]],
+      ['Case', [['Set severity', ICON.gauge], ['Set status', ICON.flag]]],
+      ['Routing', [['Route to agent', ICON.signpost], ['Route to step', ''], ['End', '']]]
+    ]
+  };
+  function paletteHtml(seq) {
+    var h = '<div class="palette" role="menu" data-stop>';
+    if (S.palette.stage === 'status') {
+      h += '<button class="pal-back" data-act="pal-back">← Set status</button>' + statusChoices(seq, 'new');
+    } else {
+      MENU[S.surface].forEach(function (g) {
+        h += '<div class="pal-grp">' + g[0] + '</div>';
+        g[1].forEach(function (it) {
+          var live = it[0] === 'Set status';
+          h += '<button class="pal-it" role="menuitem"' + (live ? ' data-act="pal-status"' : ' aria-disabled="true" title="Not part of this prototype"') + '><span class="ic" style="color:' + (it[1] === ICON.flag || it[1] === ICON.gauge ? 'var(--brand)' : 'var(--fg-3)') + '">' + it[1] + '</span><span class="grow">' + it[0] + '</span>' + (live ? '<span class="new-mark">NEW</span>' : '') + '</button>';
+        });
+      });
+    }
+    return h + '</div>';
+  }
+
+  function renderBuilder() {
+    var seq = S.seq[S.surface];
+    var mgr = S.surface === 'manager';
+    document.getElementById('top-title').textContent = mgr ? 'Cases configuration' : 'Agents';
+    var h = '<div class="builder"><div class="agent-h"><h1>' + (mgr ? 'Case manager' : AGENT) + '</h1><span class="sub">' + (mgr ? 'Routes every new case and its documents' : 'Back-office agent · Claims') + '</span></div>';
+    h += '<section class="behavior"><div class="behavior-h"><div><div class="t">' + (mgr ? 'Case manager behavior' : 'Agent behavior') + '</div><div class="s">Build your sequence, step by step, or add a JSON to import one</div></div><span class="who">⋮</span></div><div class="steps">';
+    seq.forEach(function (st, i) { h += stepHtml(st, i, seq); });
+    var next = seqNumber(seq, seq.length - 1) + 1;
+    h += '<div class="prompt-line"><span class="n">' + next + '.</span><button data-act="slash" aria-haspopup="true">Write instructions, or type \'/\' for tools</button>' + (S.palette ? paletteHtml(seq) : '') + '</div>';
+    h += '</div></section>';
+    h += '<div class="why"><div class="card"><b>Set status</b>Sets the case to Action required, Pending or Settled. A fixed status, or the answer of a Determine.</div>' +
+      '<div class="card"><b>When it can\'t apply</b>An answer that is not a status fails the step in Run history. Same status as now: nothing is recorded.</div>' +
+      '<div class="card"><b>After the run</b>A status set by a step is kept. With no step, the run keeps today\'s rule: open next steps → Action required, otherwise Pending.</div></div>';
+    view.innerHTML = h + '</div>';
+  }
+
+  // ============ CASE ============
+  function changes() { return S.c.events.filter(function (e) { return e.kind === 'status'; }); }
+  function statusPill() {
+    var c = S.c, st = c.processing ? 'processing' : c.status;
+    return '<span class="anchor"><button class="pill-btn" data-act="menu" data-val="status" aria-haspopup="true"' + (c.processing ? ' disabled title="Notch is processing a document"' : '') + '>' + tag(st, c.processing ? '' : ICON.caret) + '</button>' + (S.menu === 'status' || S.menu === 'activity' ? statusMenu() : '') + '</span>';
+  }
+  function statusMenu() {
+    var c = S.c;
+    var h = '<div class="menu" data-stop><div class="seg"><button data-act="mtab" data-val="status" aria-pressed="' + (S.menu === 'status') + '">' + ICON.tag + 'Status</button><button data-act="mtab" data-val="activity" aria-pressed="' + (S.menu === 'activity') + '">' + ICON.clock + 'Activity</button></div>';
+    if (S.menu === 'status') {
+      h += '<div class="opts">' + SETTABLE.map(function (k) { return '<button class="opt" data-act="manual" data-val="' + k + '">' + tag(k) + (c.status === k ? '<span class="ck">' + ICON.check + '</span>' : '') + '</button>'; }).join('') + '</div>';
+      h += '<div class="menu-foot">' + (c.status === 'closed' ? 'This case is Settled. Picking another status reopens it.' : 'New and Processing are set by Notch.') + '</div>';
+    } else {
+      var ch = changes().slice().reverse();
+      h += '<div class="acts">' + ch.map(function (e) {
+        var av = e.actor === 'user' ? '<span class="avatar">MN</span>' : e.actor === 'bot' ? '<span class="avatar bot">' + ICON.sparkle.replace('#F04B0F', '#fff') + '</span>' : '<span class="avatar sys">N</span>';
+        var what = e.reopen ? 'Reopened the case:' : e.from ? 'Changed status from:' : 'Set status to:';
+        return '<div class="act"><div class="act-h">' + av + '<span>' + esc(e.by) + '</span><span class="time">· ' + DAYS[e.day] + ' ' + e.time + '</span></div><div class="act-what">' + what + '</div><div class="chg">' +
+          (e.from ? tag(e.from) + '<span class="arrow">→</span>' : '') + tag(e.to) + '</div>' + (e.reason ? '<div class="reason">"' + esc(e.reason) + '"</div>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    return h + '</div>';
+  }
+  function sevPill() {
+    return '<span class="anchor"><button class="pill-btn" data-act="menu" data-val="severity" aria-haspopup="true"><span class="tag t-sev-high">High' + ICON.caret + '</span></button>' +
+      (S.menu === 'severity' ? '<div class="menu" data-stop><div class="seg"><button aria-pressed="true">' + ICON.tag + 'Severity</button><button>' + ICON.clock + 'Activity</button></div><div class="opts"><span class="opt"><span class="tag t-none">No severity</span></span><span class="opt"><span class="tag t-sev-high">High</span><span class="ck">' + ICON.check + '</span></span><span class="opt"><span class="tag t-sev-medium">Medium</span></span><span class="opt"><span class="tag t-sev-low">Low</span></span></div><div class="menu-foot">Severity is already built (AGC-1008). Shown for context only.</div></div>' : '') + '</span>';
+  }
+
+  function x(day, time) { var p = time.split(':'); var frac = ((+p[0] - 8) * 60 + +p[1]) / (11 * 60); return 6 + (day + Math.max(0.05, Math.min(0.95, frac))) / 5 * 88; }
+  function timeline() {
+    var c = S.c, h = '<div class="tl-scroll"><div class="tl" id="tl">';
+    for (var d = 0; d < 5; d++) h += '<div class="tl-col" style="left:' + (6 + (d + 0.5) / 5 * 88) + '%"><span>' + DAYS[d] + '</span></div>';
+    h += '<div class="tl-axis"></div>';
+    var COLORS = { doc: 'var(--dot-doc)', email: 'var(--dot-email)', status: 'var(--fg)' };
+    c.events.forEach(function (e, i) {
+      var left = x(e.day, e.time);
+      if (e.kind === 'status') {
+        h += '<button class="tl-flag" style="left:' + left + '%" data-act="tip" data-val="' + e.day + '" aria-label="Status change">' + (e.reopen ? '<span class="tag t-' + e.to + '">' + ICON.reopen + 'Reopened · ' + LABEL[e.to] + '</span>' : tag(e.to)) + '</button>';
+        h += '<button class="tl-dot status' + (c.tip === e.day ? ' sel' : '') + '" style="left:' + left + '%;background:' + (e.to === 'require_action' ? 'var(--err-fg)' : e.to === 'pending' ? 'var(--warn-fg)' : 'var(--ok-fg)') + '" data-act="tip" data-val="' + e.day + '" aria-label="Status change"></button>';
+      } else {
+        h += '<button class="tl-dot' + (c.tip === e.day ? ' sel' : '') + '" style="left:' + left + '%;background:' + COLORS[e.kind] + '" data-act="tip" data-val="' + e.day + '" aria-label="' + esc(e.text) + '"></button>';
+      }
+    });
+    h += '</div></div>';
+    if (c.tip !== null) h += tipHtml(c.tip);
+    h += '<div class="legend"><span><i style="background:var(--dot-doc)"></i>Docs</span><span><i style="background:var(--dot-email)"></i>Emails</span><span><i style="background:var(--dot-call)"></i>Calls</span><span><i style="background:var(--dot-action)"></i>Actions</span><span><i style="background:var(--fg)"></i>Status change</span></div>';
+    return h;
+  }
+  function tipHtml(day) {
+    var evs = S.c.events.filter(function (e) { return e.day === day; });
+    var docs = evs.filter(function (e) { return e.kind !== 'status'; }), sts = evs.filter(function (e) { return e.kind === 'status'; });
+    var left = Math.min(Math.max(6 + (day + 0.5) / 5 * 88 - 14, 1), 62);
+    var h = '<div class="tip" style="left:' + left + '%;top:128px" data-stop><div class="tip-h"><b>' + DAYS[day] + '</b>' + (sts.length ? '<span class="badge-n">Status change (' + sts.length + ')</span>' : '') + '<span class="badge-n">' + evs.length + ' events</span></div>';
+    if (docs.length) h += '<div class="tip-sec"><span class="k">Documents and messages</span>' + docs.map(function (e) { return '<div class="tip-row"><span class="tm">' + e.time + '</span><span>' + esc(e.text) + '</span></div>'; }).join('') + '</div>';
+    if (sts.length) h += '<div class="tip-sec"><span class="k">Status</span>' + sts.map(function (e) {
+      return '<div class="tip-row"><span class="tm">' + e.time + '</span><span><span class="chg">' + (e.from ? tag(e.from) + '<span class="arrow">→</span>' : '') + tag(e.to) + (e.reopen ? '<span class="tag t-none">' + ICON.reopen + 'Reopened</span>' : '') + '</span><span class="who">' + esc(e.by) + (e.reason ? ' · "' + esc(e.reason) + '"' : '') + '</span></span></div>';
+    }).join('') + '</div>';
+    return h + '</div>';
+  }
+
+  function listTag(st) {
+    var map = { new: ['#1570EF', 'New'], updated: ['#F47345', 'Updated'], failed: ['#E7000B', 'Failed'], require_action: ['#E7000B', 'Action required'], pending: ['#FFAD0D', 'Pending'], closed: ['#039855', 'Settled'] };
+    if (st === 'processing') return '<span class="list-tag"><span class="spin" style="color:#1570EF"></span>Processing</span>';
+    var m = map[st]; return '<span class="list-tag"><i style="background:' + m[0] + '"></i>' + m[1] + '</span>';
+  }
+
+  function renderCase() {
+    document.getElementById('top-title').textContent = 'Claims';
+    var c = S.c;
+    var h = '<aside class="cases"><div class="cases-h"><span class="ttl">Cases <span class="count">300</span></span><span class="icons">⌕ ⇅ ≡</span></div>' +
+      '<div class="overview">▦ Overview</div><div class="case-items">';
+    h += '<button class="case-item active"><div class="ci-row"><span class="ci-name">CLM-2026-0978</span><span class="ci-time">' + (c.processing ? 'just now' : 'now') + '</span></div><div class="ci-sub">' + listTag(c.processing ? 'processing' : c.status) + '</div></button>';
+    S.others.forEach(function (o, i) {
+      var shown = o.label && !(o.label === 'new' && o.visited) ? (o.label === 'new' && !o.visited ? 'new' : o.label) : o.status;
+      h += '<button class="case-item" data-act="other" data-val="' + i + '"><div class="ci-row"><span class="ci-name">' + o.name + '</span><span class="ci-time">' + o.time + '</span></div><div class="ci-sub">' + listTag(shown) + '</div></button>';
+    });
+    h += '</div></aside>';
+    h += '<section class="case"><div class="case-title-row"><div class="case-title"><h1>CLM-2026-0978</h1>' + statusPill() + sevPill() + '</div>' +
+      '<div class="case-meta"><span>◷ Updated ' + DAYS[c.day] + ', ' + now() + '</span><span class="round-btn">' + ICON.sparkle + '</span><span class="round-btn">⋮</span></div></div>';
+    h += '<div class="tabs"><button class="tab' + (c.tab === 'manager' ? ' active' : '') + '" data-act="tab" data-val="manager">▦ Case manager</button><button class="tab' + (c.tab === 'runs' ? ' active' : '') + '" data-act="tab" data-val="runs">↗ Run history</button><button class="tab">▭ Data</button></div>';
+    if (c.tab === 'runs') {
+      h += '<div class="card runs"><div class="run-row" style="color:var(--fg-3);font-size:12px"><span>Outcome</span><span>Last run · ' + DAYS[c.day] + ' ' + now() + '</span></div>' +
+        c.runlog.map(function (r) { return '<div class="run-row"><span class="out o-' + r.o + '">' + { ok: 'Changed', kept: 'Kept', fail: 'Failed', run: 'Run', skip: 'Skipped' }[r.o] + '</span><span>' + esc(r.t) + '</span></div>'; }).join('') + '</div>';
+    } else {
+      h += '<div class="kpis"><div class="kpi"><div class="l">Date of loss</div><div class="v">Mar 8, 2026</div></div><div class="kpi"><div class="l">Policy limit</div><div class="v">$300,000</div></div><div class="kpi"><div class="l">Demand deadline</div><div class="v">13 Apr, 2026</div></div><div class="kpi"><div class="l">Reserve amount</div><div class="v">$87.3K</div></div></div>';
+      h += '<div class="card summary"><div class="h">' + ICON.sparkle + ' ADAM Summary</div><p>Rear-end collision on Mar 8. Claimant reports neck strain, police report confirms the insured was at fault. Medical bills are arriving; liability is clear, the open question is the treatment total…<u>Read more</u></p></div>';
+      h += '<div class="card tl-card">' + timeline() + '</div>';
+    }
+    h += '</section>';
+    view.innerHTML = h;
+  }
+
+  // ============ CONTROLS ============
+  function renderCtrl() {
+    var h = '<div class="ctrl' + (S.ctrlMin ? ' min' : '') + '"><div class="ctrl-h"><b>Prototype controls</b><button data-act="ctrl-min">' + (S.ctrlMin ? 'Show' : 'Hide') + '</button></div><div class="ctrl-b">';
+    h += '<div class="seg2"><button data-act="go" data-val="builder" aria-pressed="' + (S.view === 'builder') + '">Sequence builder</button><button data-act="go" data-val="case" aria-pressed="' + (S.view === 'case') + '">Case page</button></div>';
+    if (S.view === 'builder') {
+      h += '<div><label>Sequence</label><div class="seg2"><button data-act="surface" data-val="agent" aria-pressed="' + (S.surface === 'agent') + '">Back-office agent</button><button data-act="surface" data-val="manager" aria-pressed="' + (S.surface === 'manager') + '">Case manager</button></div></div>';
+      h += '<div class="hint">Type “/” in the last line, or click a Set status chip to change its value.</div>';
+    } else {
+      h += '<div><label for="sd">A new document arrives</label><select id="sd" data-key="doc">' + ['Medical bill', 'Police report', 'Settlement letter', 'Customer email'].map(function (d) { return '<option' + (S.sim.doc === d ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select></div>';
+      h += '<div><label for="sa">Determine claim_stage answers</label><select id="sa" data-key="answer">' + ['Action required', 'Pending', 'Settled', 'Waiting on lawyer'].map(function (d) { return '<option value="' + d + '"' + (S.sim.answer === d ? ' selected' : '') + '>' + d + (d === 'Waiting on lawyer' ? ' (not a status)' : '') + '</option>'; }).join('') + '</select></div>';
+      h += '<label class="chk"><input type="checkbox" id="sn" data-key="next"' + (S.sim.next ? ' checked' : '') + '> Case has open next steps</label>';
+      h += '<button class="go" data-act="run"' + (S.c.processing ? ' disabled' : '') + '>' + (S.c.processing ? 'Processing…' : 'Upload and run sequences') + '</button>';
+      h += '<div class="hint">Runs the Case manager, then the ' + AGENT + ', as set in the builder. Then open Run history.</div>';
+    }
+    ctrl.innerHTML = h + '</div></div>';
+  }
+
+  // ============ BEHAVIOUR ============
+  function record(to, by, actor, extra) {
+    var c = S.c, from = c.status;
+    if (from === to) return false;
+    var ev = { day: c.day, time: now(), kind: 'status', from: from, to: to, by: by, actor: actor, reopen: from === 'closed' };
+    for (var k in (extra || {})) ev[k] = extra[k];
+    c.events.push(ev); c.status = to; return true;
+  }
+  function runSteps(seq, who, log) {
+    var decided = false;
+    seq.forEach(function (st, i) {
+      if (st.type !== 'setStatus') return;
+      var n = st.child ? '3.1' : seqNumber(seq, i);
+      if (st.cond === 'police' && S.sim.doc !== 'Police report') { log.push({ o: 'skip', t: who + ' · step ' + n + ' Set status: skipped, the document is not a police report' }); return; }
+      if (!st.value) { log.push({ o: 'fail', t: who + ' · step ' + n + ' Set status: no status chosen' }); return; }
+      var target, desc;
+      if (st.value.kind === 'level') { target = st.value.key; desc = 'Set status (' + LABEL[target] + ')'; }
+      else {
+        var ans = S.sim.answer; desc = 'Set status from ' + st.value.variable + ', answer "' + ans + '"';
+        target = matchStatus(ans);
+        if (!target) { log.push({ o: 'fail', t: who + ' · step ' + n + ' ' + desc + ': no status matches the answer. Status not changed' }); return; }
+      }
+      var before = S.c.status;
+      tick(1);
+      if (record(target, who + ' · step ' + n, 'bot')) log.push({ o: 'ok', t: who + ' · step ' + n + ' ' + desc + ': ' + LABEL[before] + ' → ' + LABEL[target] + (before === 'closed' ? ' (case reopened)' : '') });
+      else log.push({ o: 'kept', t: who + ' · step ' + n + ' ' + desc + ': already ' + LABEL[target] + ', nothing recorded' });
+      decided = true;
+    });
+    return decided;
+  }
+  function run() {
+    var c = S.c; tick(150);
+    c.events.push({ day: c.day, time: now(), kind: S.sim.doc === 'Customer email' ? 'email' : 'doc', text: S.sim.doc });
+    var wasClosed = c.status === 'closed';
+    c.processing = true; S.menu = null; c.tip = null; render();
+    setTimeout(function () {
+      var log = []; tick(3);
+      var a = runSteps(S.seq.manager, 'Case manager', log);
+      var b = runSteps(S.seq.agent, AGENT, log);
+      if (a || b) log.push({ o: 'run', t: 'Run finished. A step set the status, so the run keeps it' });
+      else {
+        var def = S.sim.next ? 'require_action' : 'pending';
+        var ch = record(def, 'Notch · run finished, new document', 'sys');
+        log.push({ o: 'run', t: 'Run finished. No step set the status → ' + LABEL[def] + (ch ? '' : ' (unchanged)') + (wasClosed && ch ? '. The new document reopened a Settled case' : '') });
+      }
+      c.processing = false; c.runlog = log; c.tip = c.day; render();
+      toast(wasClosed && c.status !== 'closed' ? 'Case reopened: Settled → ' + LABEL[c.status] : 'Run finished · status ' + LABEL[c.status]);
+    }, 1300);
+  }
+  function manual(k) {
+    var c = S.c;
+    if (k === c.status) { S.menu = null; render(); return; }
+    if (c.status === 'closed') { S.menu = null; S.modal = { to: k }; render(); renderLayer(); setTimeout(function () { var t = document.getElementById('rr'); if (t) t.focus(); }, 0); return; }
+    var from = c.status; tick(12); record(k, 'Maor Nakash', 'user'); S.menu = null; c.tip = c.day; render();
+    toast('Status changed: ' + LABEL[from] + ' → ' + LABEL[k]);
+  }
+
+  function renderLayer() {
+    var h = '';
+    if (S.modal) h += '<div class="overlay" data-act="mclose"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mh" data-stop><div class="modal-h" id="mh">Reopen this case?</div><div class="modal-b">' +
+      '<div>CLM-2026-0978 is ' + tag('closed') + '. Changing it to ' + tag(S.modal.to) + ' reopens it.</div><div style="font-size:13px">The timeline and Activity show the reopen with your name and reason. Sequences run on the next document as on any open case.</div>' +
+      '<div class="fl"><label for="rr">Reason (optional)</label><textarea id="rr" placeholder="e.g. Claimant disputed the settlement amount"></textarea></div></div>' +
+      '<div class="modal-f"><button class="b" data-act="mclose">Cancel</button><button class="b primary" data-act="reopen">Reopen case</button></div></div></div>';
+    if (S.toast) h += '<div class="toast" role="status">' + esc(S.toast) + '</div>';
+    layer.innerHTML = h;
+  }
+  function render() {
+    document.getElementById('rail-agents').classList.toggle('active', S.view === 'builder');
+    document.getElementById('rail-cases').classList.toggle('active', S.view === 'case');
+    if (S.view === 'builder') renderBuilder(); else renderCase();
+    renderCtrl();
+  }
+  function step(id) { var s = S.seq[S.surface]; for (var i = 0; i < s.length; i++) if (s[i].id === id) return s[i]; return null; }
+  function closeFloating() { var ch = S.palette || S.pickFor || S.menu || S.c.tip !== null; S.palette = null; S.pickFor = null; S.menu = null; S.c.tip = null; return ch; }
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-act]');
+    if (!t) { if (!ev.target.closest('[data-stop]') && closeFloating()) render(); return; }
+    var a = t.getAttribute('data-act'), v = t.getAttribute('data-val'), id = t.getAttribute('data-id');
+    switch (a) {
+      case 'go': S.view = v; closeFloating(); render(); break;
+      case 'surface': S.surface = v; closeFloating(); S.flashId = null; render(); break;
+      case 'ctrl-min': S.ctrlMin = !S.ctrlMin; renderCtrl(); break;
+      case 'slash': S.pickFor = null; S.palette = S.palette ? null : { stage: 'root' }; render(); break;
+      case 'pal-status': S.palette = { stage: 'status' }; render(); break;
+      case 'pal-back': S.palette = { stage: 'root' }; render(); break;
+      case 'pick': if (ev.target.closest('.rm')) return; S.palette = null; S.pickFor = S.pickFor === id ? null : id; render(); break;
+      case 'choose':
+        var val = t.getAttribute('data-kind') === 'level' ? { kind: 'level', key: v } : { kind: 'determine', variable: v };
+        var f = t.getAttribute('data-for');
+        if (f === 'new') { var nid = 'n' + Date.now(); S.seq[S.surface].push({ id: nid, type: 'setStatus', value: val }); S.flashId = nid; S.palette = null; }
+        else { step(f).value = val; S.pickFor = null; }
+        render(); break;
+      case 'del': ev.stopPropagation(); S.seq[S.surface] = S.seq[S.surface].filter(function (s) { return s.id !== id; }); S.pickFor = null; render(); break;
+      case 'menu': S.c.tip = null; S.menu = S.menu ? null : v; render(); break;
+      case 'mtab': S.menu = v; render(); break;
+      case 'manual': manual(v); break;
+      case 'tab': S.c.tab = v; closeFloating(); render(); break;
+      case 'tip': S.menu = null; S.c.tip = S.c.tip === +v ? null : +v; render(); break;
+      case 'run': run(); break;
+      case 'other':
+        var o = S.others[+v];
+        if (o.label === 'new' && !o.visited) { o.visited = true; render(); toast(o.name + ' opened: New is cleared for everyone. Status stays ' + LABEL[o.status] + ', set by the case manager before anyone opened it'); }
+        else toast('This prototype opens only CLM-2026-0978');
+        break;
+      case 'mclose': if (ev.target.closest('.modal') && !ev.target.closest('button')) return; S.modal = null; renderLayer(); break;
+      case 'reopen':
+        var r = document.getElementById('rr'); tick(12);
+        record(S.modal.to, 'Maor Nakash', 'user', { reason: r ? r.value.trim() : '' });
+        S.modal = null; S.c.tip = S.c.day; render(); renderLayer(); toast('Case reopened: Settled → ' + LABEL[S.c.status]); break;
+    }
+  });
+  document.addEventListener('change', function (ev) {
+    var k = ev.target.getAttribute('data-key'); if (!k) return;
+    S.sim[k] = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value;
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') { if (S.modal) { S.modal = null; renderLayer(); } else if (closeFloating()) render(); }
+    if (ev.key === '/' && S.view === 'builder' && !S.palette && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { ev.preventDefault(); S.palette = { stage: 'root' }; render(); }
+    if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.achip.btn')) ev.target.click();
+  });
+  document.querySelectorAll('[data-view]').forEach(function (b) { b.addEventListener('click', function () { S.view = b.getAttribute('data-view'); closeFloating(); render(); }); });
+
+  render();
+})();
+</script>
